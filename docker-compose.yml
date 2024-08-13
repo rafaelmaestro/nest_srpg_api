@@ -1,0 +1,42 @@
+version: '3.6'
+services:
+    mysql:
+        image: mysql:latest
+        container_name: meu-servico-mysql
+        hostname: 5f62061e95e5
+        environment:
+            MYSQL_ROOT_PASSWORD: root123
+            PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            GOSU_VERSION: 1.16
+            MYSQL_MAJOR: innovation
+            MYSQL_VERSION: 8.1.0-1.el8
+            MYSQL_SHELL_VERSION: 8.0.34-1.el8
+        volumes:
+            - /var/lib/mysql
+            # Monta o arquivo SQL personalizado durante a inicialização
+            - ./initdb:/docker-entrypoint-initdb.d
+        ports:
+            - '3000:3306'
+            - '30001:33060'
+        runtime: runc
+        networks:
+            - minha-rede
+# Ainda não está funcionando. Executar apenas o msql e subir o serviço da livraria pelo npm start
+# livrariaecom:
+#     build:
+#         context: ./
+#         dockerfile: ./Dockerfile
+#     volumes:
+#         - ./src:/usr/local/app/
+#     ports:
+#         - '5000:3000'
+#     depends_on:
+#         - mysql
+#     networks:
+#         - minha-rede
+#     env_file:
+#         - .env
+
+networks:
+    minha-rede:
+        driver: bridge
