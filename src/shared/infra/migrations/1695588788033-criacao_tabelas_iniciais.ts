@@ -16,13 +16,16 @@ export class CriacaoTabelasIniciais1695588788033 implements MigrationInterface {
         )
 
         await queryRunner.query(
-            `CREATE TABLE IF NOT EXISTS public.biometria_base (
-                foto BLOB NOT NULL,
-                cpf_usuario VARCHAR(45) NOT NULL,
-                INDEX cpf_idx (cpf_usuario),
-                PRIMARY KEY (cpf_usuario),
+            `CREATE TABLE IF NOT EXISTS public.biometria_usuario (
+                foto longblob NOT NULL,
+                cpf VARCHAR(15) NOT NULL,
+                dt_criacao DATETIME NOT NULL DEFAULT NOW(),
+                dt_ult_atualizacao DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
+                id VARCHAR(100) NOT NULL,
+                INDEX cpf_idx (cpf_usuario ASC) VISIBLE,
+                PRIMARY KEY (id),
                 CONSTRAINT cpf_usuario_fk
-                    FOREIGN KEY (cpf_usuario)
+                    FOREIGN KEY (cpf)
                     REFERENCES public.usuario (cpf)
         )`,
         )
@@ -31,6 +34,8 @@ export class CriacaoTabelasIniciais1695588788033 implements MigrationInterface {
             `CREATE TABLE IF NOT EXISTS public.localizacao_usuario (
                 latitude VARCHAR(255) NOT NULL,
                 longitude VARCHAR(255) NULL,
+                dt_criacao DATETIME NOT NULL DEFAULT NOW(),
+                dt_ult_atualizacao DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
                 id VARCHAR(155) NOT NULL,
                 cpf_usuario VARCHAR(15) NOT NULL,
                 PRIMARY KEY (id),
@@ -65,6 +70,8 @@ export class CriacaoTabelasIniciais1695588788033 implements MigrationInterface {
         await queryRunner.query(`
             CREATE TABLE IF NOT EXISTS public.convidado_evento (
                 cpf_convidado VARCHAR(15) NOT NULL,
+                dt_criacao DATETIME NOT NULL DEFAULT NOW(),
+                dt_ult_atualizacao DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
                 id_evento VARCHAR(155) NOT NULL,
                 PRIMARY KEY (cpf_convidado, id_evento),
                 INDEX id_evento_idx (id_evento ASC),
