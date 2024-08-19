@@ -1,5 +1,7 @@
-import { Controller, Get } from '@nestjs/common'
+import { Body, Controller, Get, Post, UseFilters } from '@nestjs/common'
 import { IsPublic } from '../auth/decorators/is-public.decorator'
+import { CreateUsuarioDto } from './dto/create-usuario.dto'
+import { UsuarioExistenteFilter } from './filters/usuario-existente.filter'
 import { UsuarioService } from './usuario.service'
 
 @Controller('usuario')
@@ -7,20 +9,20 @@ export class UsuarioController {
     constructor(private readonly usuarioService: UsuarioService) {}
 
     @IsPublic()
-    @Get()
+    @Get('/hello')
     hello() {
         return {
-            message: 'Hello, world!',
+            Message: 'Hello, world!',
             Date: new Date(),
         }
     }
 
-    // @IsPublic()
-    // @Post()
-    // @UseFilters(UsuarioExistenteFilter)
-    // create(@Body() createUsuarioDto: CreateUsuarioDto) {
-    //     return this.usuarioService.create(createUsuarioDto)
-    // }
+    @IsPublic()
+    @Post()
+    @UseFilters(UsuarioExistenteFilter)
+    create(@Body() createUsuarioDto: CreateUsuarioDto) {
+        return this.usuarioService.create(createUsuarioDto)
+    }
 
     // @Get('/relatorio')
     // async getRelatorioUsuarios(@CurrentUser() user: Usuario) {

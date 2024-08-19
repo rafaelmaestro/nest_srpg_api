@@ -1,4 +1,5 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm'
+import { BaseEntity, Column, CreateDateColumn, Entity, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm'
+import { BiometriaUsuarioModel } from './biometria.model'
 
 @Entity('usuario')
 export class UsuarioModel extends BaseEntity {
@@ -14,9 +15,12 @@ export class UsuarioModel extends BaseEntity {
     @Column()
     senha: string
 
-    @CreateDateColumn({ name: 'data_criacao' })
-    dataCriacao: Date
+    @OneToOne(() => BiometriaUsuarioModel, (biometria) => biometria.usuario)
+    biometria: BiometriaUsuarioModel
 
-    @UpdateDateColumn({ name: 'data_atualizacao' })
-    dataAtualizacao: Date
+    @CreateDateColumn({ name: 'dt_criacao' })
+    dt_criacao: Date
+
+    @UpdateDateColumn({ name: 'dt_ult_atualizacao' })
+    dt_ult_atualizacao: Date
 }

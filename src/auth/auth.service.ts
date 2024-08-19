@@ -9,9 +9,17 @@ import { UserToken } from './interfaces/UserToken'
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly usuarioService: UsuarioService, private readonly jwtService: JwtService) {}
-    async validateUser(cpf: string, senha: string) {
-        const usuario = await this.usuarioService.findByCpf(cpf)
+    constructor(
+        private readonly usuarioService: UsuarioService,
+        private readonly jwtService: JwtService,
+    ) {}
+    async validateUser(cpfcpOuEmail: string, senha: string) {
+        let usuario = null
+        if (cpfcpOuEmail.includes('@')) {
+            usuario = await this.usuarioService.findByEmail(cpfcpOuEmail)
+        } else {
+            usuario = await this.usuarioService.findByCpf(cpfcpOuEmail)
+        }
 
         if (usuario) {
             const isSenhaValida = await bcrypt.compare(senha, usuario.senha)

@@ -1,4 +1,4 @@
-import { IsEmail, IsPhoneNumber, IsPostalCode, IsString, Matches, MaxLength, MinLength } from 'class-validator'
+import { IsBase64, IsEmail, IsString, Matches, MaxLength, MinLength } from 'class-validator'
 import { Usuario } from '../entities/usuario.entity'
 
 export class CreateUsuarioDto extends Usuario {
@@ -11,9 +11,6 @@ export class CreateUsuarioDto extends Usuario {
     @IsEmail()
     email: string
 
-    @IsPhoneNumber('BR')
-    telefone: string
-
     @IsString()
     @MinLength(4)
     @MaxLength(20)
@@ -22,16 +19,6 @@ export class CreateUsuarioDto extends Usuario {
     })
     senha: string
 
-    @IsString()
-    rua: string
-
-    @IsString()
-    @IsPostalCode('BR')
-    cep: string
-
-    @IsString()
-    estado: string
-
-    @IsString()
-    cidade: string
+    @IsBase64()
+    foto: string
 }
