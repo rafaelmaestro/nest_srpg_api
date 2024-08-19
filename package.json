@@ -1,6 +1,6 @@
 {
-    "name": "nest_srpg_api",
-    "version": "0.0.1",
+    "name": "nest-srpg-api",
+    "version": "1.0.0",
     "description": "",
     "author": "",
     "private": true,
@@ -27,6 +27,7 @@
         "@nestjs/platform-express": "^10.0.0",
         "@nestjs/typeorm": "^10.0.2",
         "bcrypt": "^5.1.1",
+        "class-transformer": "^0.5.1",
         "class-validator": "^0.14.1",
         "cross-env": "^7.0.3",
         "dotenv": "^16.4.5",
@@ -35,7 +36,8 @@
         "passport-local": "^1.0.0",
         "reflect-metadata": "^0.2.0",
         "rxjs": "^7.8.1",
-        "typeorm": "^0.3.20"
+        "typeorm": "^0.3.20",
+        "ulid": "^2.3.0"
     },
     "devDependencies": {
         "@nestjs/cli": "^10.0.0",
