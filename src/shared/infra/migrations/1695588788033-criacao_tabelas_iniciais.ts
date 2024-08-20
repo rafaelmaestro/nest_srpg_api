@@ -69,14 +69,14 @@ export class CriacaoTabelasIniciais1695588788033 implements MigrationInterface {
 
         await queryRunner.query(`
             CREATE TABLE IF NOT EXISTS public.convidado_evento (
-                cpf_convidado VARCHAR(15) NOT NULL,
+                email_convidado VARCHAR(155) NOT NULL,
                 dt_criacao DATETIME NOT NULL DEFAULT NOW(),
                 dt_ult_atualizacao DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
                 id_evento VARCHAR(155) NOT NULL,
-                PRIMARY KEY (cpf_convidado, id_evento),
+                PRIMARY KEY (email_convidado, id_evento),
                 INDEX id_evento_idx (id_evento ASC),
-                CONSTRAINT cpf_convidado
-                    FOREIGN KEY (cpf_convidado)
+                CONSTRAINT email_convidado
+                    FOREIGN KEY (email_convidado)
                     REFERENCES public.usuario (cpf)
                     ON DELETE NO ACTION
                     ON UPDATE NO ACTION,
