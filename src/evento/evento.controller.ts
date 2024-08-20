@@ -1,34 +1,44 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { EventoService } from './evento.service';
-import { CreateEventoDto } from './dto/create-evento.dto';
-import { UpdateEventoDto } from './dto/update-evento.dto';
+import { Body, Controller, Get, Post } from '@nestjs/common'
+import { IsPublic } from '../auth/decorators/is-public.decorator'
+import { CreateEventoDto } from './dto/create-evento.dto'
+import { EventoService } from './evento.service'
 
 @Controller('evento')
 export class EventoController {
-  constructor(private readonly eventoService: EventoService) {}
+    constructor(private readonly eventoService: EventoService) {}
 
-  @Post()
-  create(@Body() createEventoDto: CreateEventoDto) {
-    return this.eventoService.create(createEventoDto);
-  }
+    @IsPublic()
+    @Get('/hello')
+    hello() {
+        return {
+            Message: 'Hello, world!',
+            Date: new Date(),
+        }
+    }
 
-  @Get()
-  findAll() {
-    return this.eventoService.findAll();
-  }
+    @IsPublic()
+    @Post()
+    create(@Body() createEventoDto: CreateEventoDto) {
+        return this.eventoService.create(createEventoDto)
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.eventoService.findOne(+id);
-  }
+    // @Get()
+    // findAll() {
+    //     return this.eventoService.findAll()
+    // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventoDto: UpdateEventoDto) {
-    return this.eventoService.update(+id, updateEventoDto);
-  }
+    // @Get(':id')
+    // findOne(@Param('id') id: string) {
+    //     return this.eventoService.findOne(+id)
+    // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventoService.remove(+id);
-  }
+    // @Patch(':id')
+    // update(@Param('id') id: string, @Body() updateEventoDto: UpdateEventoDto) {
+    //     return this.eventoService.update(+id, updateEventoDto)
+    // }
+
+    // @Delete(':id')
+    // remove(@Param('id') id: string) {
+    //     return this.eventoService.remove(+id)
+    // }
 }

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { APP_GUARD } from '@nestjs/core'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { Modules } from '.'
 import { OrmModuleOptions } from '../ormconfig'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
@@ -11,7 +10,7 @@ import { EventoModule } from './evento/evento.module'
 import { UsuarioModule } from './usuario/usuario.module'
 
 @Module({
-    imports: [...Modules, TypeOrmModule?.forRoot({ ...OrmModuleOptions }), AuthModule, UsuarioModule, EventoModule],
+    imports: [TypeOrmModule?.forRoot({ ...OrmModuleOptions }), AuthModule, UsuarioModule, EventoModule],
     controllers: [AppController],
     providers: [
         AppService,

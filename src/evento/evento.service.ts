@@ -1,26 +1,28 @@
-import { Injectable } from '@nestjs/common';
-import { CreateEventoDto } from './dto/create-evento.dto';
-import { UpdateEventoDto } from './dto/update-evento.dto';
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { UsuarioService } from '../usuario/usuario.service'
+import { CreateEventoDto } from './dto/create-evento.dto'
+import { EventoRepository } from './evento.repository'
 
 @Injectable()
 export class EventoService {
-  create(createEventoDto: CreateEventoDto) {
-    return 'This action adds a new evento';
-  }
+    constructor(
+        private readonly eventoRepository: EventoRepository,
+        private readonly usuarioService: UsuarioService,
+    ) {}
+    async create(createEventoDto: CreateEventoDto) {
+        const usuario = await this.usuarioService.findByCpf(createEventoDto.cpf_organizador)
 
-  findAll() {
-    return `This action returns all evento`;
-  }
+        if (!usuario) {
+            throw new NotFoundException(
+                `Usuário não encontrado com o CPF informado: ${createEventoDto.cpf_organizador}`,
+            )
+        }
+        const eventoCriado = await this.eventoRepository.save(createEventoDto)
 
-  findOne(id: number) {
-    return `This action returns a #${id} evento`;
-  }
+        if (eventoCriado) {
+            // TODO: Implementar envio de e-mail para os convidados
+        }
 
-  update(id: number, updateEventoDto: UpdateEventoDto) {
-    return `This action updates a #${id} evento`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} evento`;
-  }
+        return eventoCriado
+    }
 }
