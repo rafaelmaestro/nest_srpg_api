@@ -1,5 +1,6 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm'
 import { ConvidadoEventoModel } from './convidado-evento.model'
+import { StatusEvento } from '../entities/evento.entity'
 
 @Entity('evento')
 export class EventoModel extends BaseEntity {
@@ -10,10 +11,19 @@ export class EventoModel extends BaseEntity {
     nome: string
 
     @Column()
+    status: StatusEvento
+
+    @Column()
     descricao: string
 
     @Column()
     data_hora: Date
+
+    @Column()
+    dt_inicio: Date
+
+    @Column()
+    dt_fim: Date
 
     @Column()
     latitude: string
@@ -27,7 +37,12 @@ export class EventoModel extends BaseEntity {
     @Column()
     cpf_organizador: string
 
-    @OneToMany(() => ConvidadoEventoModel, (convidado) => convidado.evento, { cascade: true, eager: true })
+    @OneToMany(() => ConvidadoEventoModel, (convidado) => convidado.evento, {
+        cascade: true,
+        eager: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+    })
     convidados: ConvidadoEventoModel[]
 
     @CreateDateColumn({ name: 'dt_criacao' })

@@ -51,10 +51,13 @@ export class CriacaoTabelasIniciais1695588788033 implements MigrationInterface {
             `CREATE TABLE IF NOT EXISTS public.evento (
                 id VARCHAR(155) NOT NULL,
                 nome VARCHAR(255) NOT NULL,
+                status ENUM('PENDENTE', 'EM ANDAMENTO', 'FINALIZADO', 'CANCELADO') NOT NULL,
                 descricao VARCHAR(255) NOT NULL,
                 data_hora DATETIME NOT NULL,
-                latitude VARCHAR(155) NOT NULL,
-                longitude VARCHAR(155) NOT NULL,
+                latitude VARCHAR(155),
+                longitude VARCHAR(155),
+                dt_inicio DATETIME,
+                dt_fim DATETIME,
                 dt_criacao DATETIME NULL DEFAULT NOW(),
                 dt_ult_atualizacao DATETIME NULL DEFAULT NOW() ON UPDATE NOW(),
                 cpf_organizador VARCHAR(15) NULL,
@@ -73,6 +76,8 @@ export class CriacaoTabelasIniciais1695588788033 implements MigrationInterface {
                 dt_criacao DATETIME NOT NULL DEFAULT NOW(),
                 dt_ult_atualizacao DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
                 id_evento VARCHAR(155) NOT NULL,
+                dt_hora_check_in DATETIME,
+                dt_hora_check_out DATETIME,  
                 PRIMARY KEY (email_convidado, id_evento),
                 INDEX id_evento_idx (id_evento ASC),
                 CONSTRAINT email_convidado
@@ -83,6 +88,8 @@ export class CriacaoTabelasIniciais1695588788033 implements MigrationInterface {
                 CONSTRAINT id_evento
                     FOREIGN KEY (id_evento)
                     REFERENCES public.evento (id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE
         )
         `)
     }
