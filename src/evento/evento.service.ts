@@ -59,9 +59,11 @@ export class EventoService {
 
         if (updateEventoDto.status && !Object.values(StatusEvento).includes(statusEvento)) {
             throw new BadRequestException(
-                'Status informado não é válido, utilize: PENDENTE, EM ANDAMENTO, FINALIZADO ou CANCELADO',
+                'Status informado não é válido, utilize: PENDENTE, EM ANDAMENTO, PAUSADO, FINALIZADO ou CANCELADO',
             )
         }
+
+        // TODO: proibir alterações num evento que já iniciou, exceto para finalizar ou pausar
 
         if (evento.status === StatusEvento.FINALIZADO || evento.status === StatusEvento.CANCELADO) {
             throw new BadRequestException('Não é possível alterar um evento que já foi finalizado ou cancelado')
@@ -80,6 +82,9 @@ export class EventoService {
         if (eventoAtualizado) {
             // TODO: implementar envio de notificação para os convidados
         }
+
+        // TODO: Implementar check-out de todos os convidados que não realizaram o check-out
+        // TODO: Implementar pause e resume do evento
 
         return eventoAtualizado
     }
@@ -101,7 +106,7 @@ export class EventoService {
 
         if (status && !Object.values(StatusEvento).includes(status)) {
             throw new BadRequestException(
-                'Status informado não é válido, utilize: PENDENTE, EM ANDAMENTO, FINALIZADO ou CANCELADO',
+                'Status informado não é válido, utilize: PENDENTE, EM ANDAMENTO, PAUSADO, FINALIZADO ou CANCELADO',
             )
         }
 

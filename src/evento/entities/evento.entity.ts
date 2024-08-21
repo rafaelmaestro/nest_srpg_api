@@ -5,6 +5,7 @@ export enum StatusEvento {
     EM_ANDAMENTO = 'EM ANDAMENTO',
     FINALIZADO = 'FINALIZADO',
     CANCELADO = 'CANCELADO',
+    PAUSADO = 'PAUSADO',
 }
 
 export class Evento {
