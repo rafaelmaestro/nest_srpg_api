@@ -21,6 +21,11 @@ services:
         runtime: runc
         networks:
             - minha-rede
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.50'
+                    memory: 512M
 # Ainda não está funcionando. Executar apenas o msql e subir o serviço da livraria pelo npm start
 # livrariaecom:
 #     build:

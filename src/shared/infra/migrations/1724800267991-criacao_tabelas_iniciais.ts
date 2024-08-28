@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
 
-export class CriacaoTabelasIniciais1695588788033 implements MigrationInterface {
+export class CriacaoTabelasIniciais1724800267991 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
             `CREATE TABLE IF NOT EXISTS public.usuario (
@@ -22,7 +22,7 @@ export class CriacaoTabelasIniciais1695588788033 implements MigrationInterface {
                 dt_criacao DATETIME NOT NULL DEFAULT NOW(),
                 dt_ult_atualizacao DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
                 id VARCHAR(100) NOT NULL,
-                INDEX cpf_idx (cpf_usuario ASC) VISIBLE,
+                INDEX cpf_idx (cpf ASC) VISIBLE,
                 PRIMARY KEY (id),
                 CONSTRAINT cpf_usuario_fk
                     FOREIGN KEY (cpf)

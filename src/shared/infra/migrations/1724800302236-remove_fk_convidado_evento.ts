@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
 
-export class RemoveForeignKeyConstraintFromConvidadoEvento1680000000000 implements MigrationInterface {
+export class RemoveForeignKeyConstraintFromConvidadoEvento1724800302236 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
             ALTER TABLE convidado_evento 
