@@ -20,5 +20,5 @@ export class CreateUsuarioDto extends Usuario {
     senha: string
 
     @IsBase64()
-    foto: string
+    foto?: string
 }

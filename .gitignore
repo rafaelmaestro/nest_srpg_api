@@ -8,3 +8,4 @@ dist/
 test/coverage/
 .npmrc
 .env
+biometria-teste.d.ts.json

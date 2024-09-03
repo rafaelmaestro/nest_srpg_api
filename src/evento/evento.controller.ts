@@ -42,8 +42,10 @@ export class EventoController {
         @Query('nome') nome: string,
         @Query('pagina') pagina: string,
         @Query('limite') limite: string,
+        @Query('cpf_convidado') cpf_convidado: string,
+        @Query('cpf_organizador') cpf_organizador: string,
     ) {
-        return this.eventoService.find({ status, nome, pagina, limite })
+        return this.eventoService.find({ status, nome, pagina, limite, cpf_convidado, cpf_organizador })
     }
 
     @Get(':id')

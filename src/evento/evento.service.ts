@@ -97,8 +97,8 @@ export class EventoService {
         return await this.eventoRepository.remove(id)
     }
 
-    async find({ status, nome, pagina, limite }) {
-        if (!status && !nome && !pagina && !limite) {
+    async find({ status, nome, pagina, limite, cpf_convidado, cpf_organizador }) {
+        if (!status && !nome && !pagina && !limite && !cpf_convidado && !cpf_organizador) {
             throw new BadRequestException(
                 'Informe ao menos um parâmetro para a busca: status, nome ou pagina e limite!',
             )
@@ -126,7 +126,7 @@ export class EventoService {
             throw new BadRequestException('Informe o parâmetro pagina para a paginação')
         }
 
-        return await this.eventoRepository.find({ status, nome, pagina, limite })
+        return await this.eventoRepository.find({ status, nome, pagina, limite, cpf_convidado, cpf_organizador })
     }
 
     async checkIn(id: string, checkInDto: CheckInDto) {

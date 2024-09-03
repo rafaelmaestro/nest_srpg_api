@@ -7,10 +7,14 @@ import { EventoModel } from './models/evento.model'
 import { UpdateEventoDto } from './dto/update-evento.dto'
 import { StatusEvento } from './entities/evento.entity'
 import { Convidado } from './entities/convidado.entity'
+import { UsuarioRepository } from '../usuario/usuario.repository'
 
 @Injectable()
 export class EventoRepository {
-    constructor(private readonly dataSource: DataSource) {}
+    constructor(
+        private readonly dataSource: DataSource,
+        private readonly usuarioRepository: UsuarioRepository,
+    ) {}
 
     async save(evento: CreateEventoDto) {
         const queryRunner = this.dataSource.createQueryRunner()
@@ -183,7 +187,7 @@ export class EventoRepository {
         await this.dataSource.getRepository(EventoModel).delete(id)
     }
 
-    async find({ status, nome, pagina, limite }) {
+    async find({ status, nome, pagina, limite, cpf_convidado, cpf_organizador }) {
         const query = this.dataSource.getRepository(EventoModel).createQueryBuilder('evento')
 
         if (status) {
@@ -194,6 +198,22 @@ export class EventoRepository {
             query.andWhere('evento.nome LIKE :nome', { nome: `%${nome}%` })
         }
 
+        if (cpf_convidado) {
+            const usuario = await this.usuarioRepository.findOneByCpf(cpf_convidado)
+
+            if (!usuario) {
+                throw new NotFoundException('Usuário informado como convidado não encontrado')
+            }
+
+            query
+                .innerJoin('evento.convidados', 'convidado')
+                .andWhere('convidado.email = :email', { email: usuario.email })
+        }
+
+        if (cpf_organizador) {
+            query.andWhere('evento.cpf_organizador = :cpf_organizador', { cpf_organizador: cpf_organizador })
+        }
+
         const total = await query.getCount()
 
         if (pagina && limite) {
@@ -202,25 +222,34 @@ export class EventoRepository {
         }
 
         const eventos = await query.getMany()
+
         return {
             eventos: [
                 eventos.map((evento) => ({
                     ...evento,
                     convidados: {
-                        total: evento.convidados.length,
-                        emails: evento.convidados.map((convidado) => convidado.email),
+                        total: evento.convidados ? evento.convidados.length : 0,
+                        emails: evento.convidados ? evento.convidados.map((convidado) => convidado.email) : [],
                     },
                     check_ins: {
-                        total: evento.convidados.filter((convidado) => convidado.dt_hora_check_in).length,
+                        total: evento.convidados
+                            ? evento.convidados.filter((convidado) => convidado.dt_hora_check_in).length
+                            : 0,
                         emails: evento.convidados
-                            .filter((convidado) => convidado.dt_hora_check_in)
-                            .map((convidado) => convidado.email),
+                            ? evento.convidados
+                                  .filter((convidado) => convidado.dt_hora_check_in)
+                                  .map((convidado) => convidado.email)
+                            : [],
                     },
                     check_outs: {
-                        total: evento.convidados.filter((convidado) => convidado.dt_hora_check_out).length,
+                        total: evento.convidados
+                            ? evento.convidados.filter((convidado) => convidado.dt_hora_check_out).length
+                            : 0,
                         emails: evento.convidados
-                            .filter((convidado) => convidado.dt_hora_check_out)
-                            .map((convidado) => convidado.email),
+                            ? evento.convidados
+                                  .filter((convidado) => convidado.dt_hora_check_out)
+                                  .map((convidado) => convidado.email)
+                            : [],
                     },
                 })),
             ],
