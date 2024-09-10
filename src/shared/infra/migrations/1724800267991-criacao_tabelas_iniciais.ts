@@ -51,9 +51,10 @@ export class CriacaoTabelasIniciais1724800267991 implements MigrationInterface {
             `CREATE TABLE IF NOT EXISTS public.evento (
                 id VARCHAR(155) NOT NULL,
                 nome VARCHAR(255) NOT NULL,
-                status ENUM('PENDENTE', 'EM ANDAMENTO', 'FINALIZADO', 'CANCELADO', 'PAUSADO') NOT NULL,
+                status ENUM('PENDENTE', 'EM_ANDAMENTO', 'FINALIZADO', 'CANCELADO', 'PAUSADO') NOT NULL,
                 descricao VARCHAR(255) NOT NULL,
-                data_hora DATETIME NOT NULL,
+                dt_inicio_prevista DATETIME NOT NULL,
+                dt_fim_prevista DATETIME NOT NULL,
                 latitude VARCHAR(155),
                 longitude VARCHAR(155),
                 dt_inicio DATETIME,

@@ -69,7 +69,25 @@ export class EventoService {
             throw new BadRequestException('Não é possível alterar um evento que já foi finalizado ou cancelado')
         }
 
+        if (evento.status === StatusEvento.EM_ANDAMENTO) {
+            if (updateEventoDto.status === StatusEvento.PENDENTE) {
+                throw new BadRequestException('Não é possível voltar um evento em andamento para pendente')
+            }
+            if (updateEventoDto.status === StatusEvento.EM_ANDAMENTO) {
+                throw new BadRequestException('O evento já está em andamento')
+            }
+        }
+
+        console.log(updateEventoDto.status === StatusEvento.EM_ANDAMENTO)
+        console.log(updateEventoDto.status)
+        console.log(typeof updateEventoDto.status)
+        console.log(updateEventoDto)
+
         if (updateEventoDto.status === StatusEvento.EM_ANDAMENTO) {
+            if (updateEventoDto.latitude == null || updateEventoDto.longitude == null) {
+                throw new BadRequestException('Informe a latitude e longitude para iniciar o evento')
+            }
+
             updateEventoDto.dt_inicio = new Date()
         }
 

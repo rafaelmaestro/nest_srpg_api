@@ -17,7 +17,10 @@ export class EventoModel extends BaseEntity {
     descricao: string
 
     @Column()
-    data_hora: Date
+    dt_inicio_prevista: Date
+
+    @Column()
+    dt_fim_prevista: Date
 
     @Column()
     dt_inicio: Date

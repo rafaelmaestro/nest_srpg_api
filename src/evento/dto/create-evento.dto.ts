@@ -9,7 +9,10 @@ export class CreateEventoDto extends Evento {
     descricao: string
 
     @IsDateString()
-    data_hora: Date
+    dt_inicio_prevista: Date
+
+    @IsDateString()
+    dt_fim_prevista: Date
 
     @IsOptional()
     @IsLatitude()
@@ -28,7 +31,7 @@ export class CreateEventoDto extends Evento {
     dt_fim: Date
 
     @IsOptional()
-    status: string
+    status: StatusEvento
 
     @IsString()
     local: string

@@ -49,7 +49,8 @@ export class EventoRepository {
                     id: eventoCriado.id,
                     nome: eventoCriado.nome,
                     descricao: eventoCriado.descricao,
-                    data_hora: eventoCriado.data_hora,
+                    data_inicio_prevista: eventoCriado.data_inicio_prevista,
+                    data_fim_prevista: eventoCriado.data_fim_prevista,
                     latitude: eventoCriado.latitude,
                     longitude: eventoCriado.longitude,
                     local: eventoCriado.local,
@@ -113,8 +114,12 @@ export class EventoRepository {
                 values['descricao'] = updateEventoDto.descricao
             }
 
-            if (updateEventoDto.data_hora) {
-                values['data_hora'] = updateEventoDto.data_hora
+            if (updateEventoDto.dt_inicio_prevista) {
+                values['dt_inicio_prevista'] = updateEventoDto.dt_inicio_prevista
+            }
+
+            if (updateEventoDto.dt_fim_prevista) {
+                values['dt_fim_prevista'] = updateEventoDto.dt_fim_prevista
             }
 
             if (updateEventoDto.latitude) {
