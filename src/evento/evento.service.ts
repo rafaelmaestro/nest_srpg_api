@@ -78,11 +78,6 @@ export class EventoService {
             }
         }
 
-        console.log(updateEventoDto.status === StatusEvento.EM_ANDAMENTO)
-        console.log(updateEventoDto.status)
-        console.log(typeof updateEventoDto.status)
-        console.log(updateEventoDto)
-
         if (updateEventoDto.status === StatusEvento.EM_ANDAMENTO) {
             if (updateEventoDto.latitude == null || updateEventoDto.longitude == null) {
                 throw new BadRequestException('Informe a latitude e longitude para iniciar o evento')

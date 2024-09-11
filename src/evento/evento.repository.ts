@@ -210,13 +210,12 @@ export class EventoRepository {
                 throw new NotFoundException('Usuário informado como convidado não encontrado')
             }
 
-            query
-                .innerJoin('evento.convidados', 'convidado')
-                .andWhere('convidado.email = :email', { email: usuario.email })
+            query.leftJoin('evento.convidados', 'convidado')
+            query.orWhere('convidado.email = :email', { email: usuario.email })
         }
 
         if (cpf_organizador) {
-            query.andWhere('evento.cpf_organizador = :cpf_organizador', { cpf_organizador: cpf_organizador })
+            query.orWhere('evento.cpf_organizador = :cpf_organizador', { cpf_organizador })
         }
 
         const total = await query.getCount()
