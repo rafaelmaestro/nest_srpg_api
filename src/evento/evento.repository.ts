@@ -195,10 +195,6 @@ export class EventoRepository {
     async find({ status, nome, pagina, limite, cpf_convidado, cpf_organizador }) {
         const query = this.dataSource.getRepository(EventoModel).createQueryBuilder('evento')
 
-        if (status) {
-            query.andWhere('evento.status = :status', { status })
-        }
-
         if (nome) {
             query.andWhere('evento.nome LIKE :nome', { nome: `%${nome}%` })
         }
@@ -216,6 +212,14 @@ export class EventoRepository {
 
         if (cpf_organizador) {
             query.orWhere('evento.cpf_organizador = :cpf_organizador', { cpf_organizador })
+        }
+
+        if (status) {
+            const statusEnviados = status.split(',').map((status) => status.toUpperCase().trim())
+
+            console.log('statusEnviados:', statusEnviados)
+
+            query.andWhere('evento.status IN (:...status)', { status: statusEnviados })
         }
 
         const total = await query.getCount()

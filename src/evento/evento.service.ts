@@ -117,10 +117,14 @@ export class EventoService {
             )
         }
 
-        if (status && !Object.values(StatusEvento).includes(status)) {
-            throw new BadRequestException(
-                'Status informado não é válido, utilize: PENDENTE, EM ANDAMENTO, PAUSADO, FINALIZADO ou CANCELADO',
-            )
+        if (status) {
+            status.split(',').forEach((s) => {
+                if (!Object.values(StatusEvento).includes(s.toUpperCase().trim())) {
+                    throw new BadRequestException(
+                        'Status informado não é válido, utilize: PENDENTE, EM ANDAMENTO, PAUSADO, FINALIZADO ou CANCELADO',
+                    )
+                }
+            })
         }
 
         if (pagina && (isNaN(Number(pagina)) || pagina < 0 || pagina == 0)) {
@@ -138,6 +142,8 @@ export class EventoService {
         if (limite && !pagina) {
             throw new BadRequestException('Informe o parâmetro pagina para a paginação')
         }
+
+        console.log('argumentos recebidos:', { status, nome, pagina, limite, cpf_convidado, cpf_organizador })
 
         return await this.eventoRepository.find({ status, nome, pagina, limite, cpf_convidado, cpf_organizador })
     }
