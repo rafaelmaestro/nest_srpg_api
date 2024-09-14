@@ -228,7 +228,9 @@ export class EventoRepository {
             query.skip((pagina - 1) * limite)
             query.take(limite)
         }
-
+        // Ordenar por dt_inicio, mas se for null, ordenar por dt_inicio_prevista
+        query.addOrderBy('evento.dt_inicio', 'DESC')
+        query.addOrderBy('evento.dt_inicio_prevista', 'DESC')
         const eventos = await query.getMany()
 
         return {
