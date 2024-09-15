@@ -1,6 +1,7 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from 'typeorm'
 import { ConvidadoEventoModel } from './convidado-evento.model'
 import { StatusEvento } from '../entities/evento.entity'
+import { CheckInsModel } from './check-ins.model'
 
 @Entity('evento')
 export class EventoModel extends BaseEntity {

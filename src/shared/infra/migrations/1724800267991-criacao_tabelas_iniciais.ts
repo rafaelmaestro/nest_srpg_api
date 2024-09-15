@@ -7,6 +7,7 @@ export class CriacaoTabelasIniciais1724800267991 implements MigrationInterface {
                 cpf VARCHAR(15) NOT NULL,
                 email VARCHAR(155) NOT NULL,
                 nome VARCHAR(155) NOT NULL,
+                hash_recuperacao_senha VARCHAR(255),
                 dt_criacao DATETIME NOT NULL DEFAULT NOW(),
                 dt_ult_atualizacao DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
                 senha VARCHAR(255) NOT NULL,
@@ -77,8 +78,7 @@ export class CriacaoTabelasIniciais1724800267991 implements MigrationInterface {
                 dt_criacao DATETIME NOT NULL DEFAULT NOW(),
                 dt_ult_atualizacao DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
                 id_evento VARCHAR(155) NOT NULL,
-                dt_hora_check_in DATETIME,
-                dt_hora_check_out DATETIME,  
+                check_ins json not null,
                 PRIMARY KEY (email_convidado, id_evento),
                 INDEX id_evento_idx (id_evento ASC),
                 CONSTRAINT email_convidado

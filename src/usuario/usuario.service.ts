@@ -1,12 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
 import { CreateUsuarioDto } from './dto/create-usuario.dto'
 import { UsuarioRepository } from './usuario.repository'
 import { foto } from './../../biometria-teste.d.ts.json'
+import { EMailerService } from '../mailer/mailer.service'
 
 @Injectable()
 export class UsuarioService {
-    constructor(private readonly usuarioRepository: UsuarioRepository) {}
+    constructor(
+        private readonly usuarioRepository: UsuarioRepository,
+        private readonly emailerService: EMailerService,
+    ) {}
     async create(createUsuarioDto: CreateUsuarioDto) {
         const usuario: CreateUsuarioDto = {
             ...createUsuarioDto,
@@ -24,6 +28,26 @@ export class UsuarioService {
         const usuarioCriado = await this.usuarioRepository.save(usuario)
 
         return usuarioCriado
+    }
+
+    async recuperarSenha(email: string) {
+        const usuario = await this.usuarioRepository.findOneByEmail(email)
+
+        if (!usuario) {
+            return
+        }
+
+        const novaSenha = Math.random().toString(36).slice(-8)
+        usuario.hash_recuperacao_senha = await bcrypt.hash(novaSenha, 10)
+
+        await this.usuarioRepository.setHashRecuperacaoSenha(email, usuario.hash_recuperacao_senha)
+        await this.emailerService.sendMail(
+            'rafaelmaestro@live.com',
+            'Recuperação de senha',
+            `Sua nova senha é: ${novaSenha}`,
+            `Sua nova senha é: <b>${novaSenha}</b>`,
+        )
+        // TODO: enviar e-mail com a nova senha
     }
 
     findByEmail(email: string) {

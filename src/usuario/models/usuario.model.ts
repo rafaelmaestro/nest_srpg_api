@@ -13,6 +13,9 @@ export class UsuarioModel extends BaseEntity {
     email: string
 
     @Column()
+    hash_recuperacao_senha: string
+
+    @Column()
     senha: string
 
     @OneToOne(() => BiometriaUsuarioModel, (biometria) => biometria.usuario)

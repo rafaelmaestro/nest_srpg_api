@@ -23,14 +23,6 @@ export class CreateEventoDto extends Evento {
     longitude: string
 
     @IsOptional()
-    @IsDateString()
-    dt_inicio: Date
-
-    @IsOptional()
-    @IsDateString()
-    dt_fim: Date
-
-    @IsOptional()
     status: StatusEvento
 
     @IsString()

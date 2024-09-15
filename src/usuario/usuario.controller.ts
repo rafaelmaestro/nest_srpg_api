@@ -3,6 +3,7 @@ import { IsPublic } from '../auth/decorators/is-public.decorator'
 import { CreateUsuarioDto } from './dto/create-usuario.dto'
 import { UsuarioExistenteFilter } from './filters/usuario-existente.filter'
 import { UsuarioService } from './usuario.service'
+import { RecuperarSenhaDto } from './dto/recuperar-senha.dto'
 
 @Controller('usuario')
 export class UsuarioController {
@@ -22,6 +23,12 @@ export class UsuarioController {
     @UseFilters(UsuarioExistenteFilter)
     create(@Body() createUsuarioDto: CreateUsuarioDto) {
         return this.usuarioService.create(createUsuarioDto)
+    }
+
+    @IsPublic()
+    @Post('/recuperar-senha')
+    recuperarSenha(@Body() recuperarSenhaDto: RecuperarSenhaDto) {
+        return this.usuarioService.recuperarSenha(recuperarSenhaDto.email)
     }
 
     // @Get('/relatorio')

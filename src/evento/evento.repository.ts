@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 import { ulid } from 'ulid'
 import { CreateEventoDto } from './dto/create-evento.dto'
@@ -8,6 +8,7 @@ import { UpdateEventoDto } from './dto/update-evento.dto'
 import { StatusEvento } from './entities/evento.entity'
 import { Convidado } from './entities/convidado.entity'
 import { UsuarioRepository } from '../usuario/usuario.repository'
+import { CheckInsModel } from './models/check-ins.model'
 
 @Injectable()
 export class EventoRepository {
@@ -28,6 +29,7 @@ export class EventoRepository {
                     const convidadoModel = new ConvidadoEventoModel().build({
                         email: convidado,
                         id_evento: evento.id,
+                        check_ins: [],
                     })
 
                     convidadosModelArray.push(convidadoModel)
@@ -43,19 +45,35 @@ export class EventoRepository {
 
             const eventoCriado = await queryRunner.manager.save(EventoModel, eventoParaSalvar)
 
+            console.log(eventoCriado)
+
             await queryRunner.commitTransaction()
             return {
                 evento: {
                     id: eventoCriado.id,
                     nome: eventoCriado.nome,
+                    status: eventoCriado.status,
                     descricao: eventoCriado.descricao,
-                    data_inicio_prevista: eventoCriado.data_inicio_prevista,
-                    data_fim_prevista: eventoCriado.data_fim_prevista,
+                    dt_inicio_prevista: eventoCriado.dt_inicio_prevista,
+                    dt_fim_prevista: eventoCriado.dt_fim_prevista,
+                    local: eventoCriado.local,
                     latitude: eventoCriado.latitude,
                     longitude: eventoCriado.longitude,
-                    local: eventoCriado.local,
                     cpf_organizador: eventoCriado.cpf_organizador,
-                    convidados: eventoCriado.convidados.map((convidado) => convidado.email),
+                    dt_criacao: eventoCriado.dt_criacao,
+                    dt_ult_atualizacao: eventoCriado.dt_ult_atualizacao,
+                    check_ins: {
+                        total: 0,
+                        emails: [],
+                    },
+                    check_outs: {
+                        total: 0,
+                        emails: [],
+                    },
+                    convidados: {
+                        total: eventoCriado.convidados.length,
+                        emails: eventoCriado.convidados.map((convidado) => convidado.email),
+                    },
                 },
             }
         } catch (error) {
@@ -77,6 +95,22 @@ export class EventoRepository {
             throw new NotFoundException(`Evento não encontrado com o ID informado: ${id}`)
         }
 
+        const checkInEmails = new Set<string>()
+        const checkOutEmails = new Set<string>()
+
+        evento.convidados.forEach((convidado) => {
+            if (convidado.check_ins) {
+                convidado.check_ins.forEach((check_in) => {
+                    if (check_in.dt_hora_check_in) {
+                        checkInEmails.add(convidado.email)
+                    }
+                    if (check_in.dt_hora_check_out) {
+                        checkOutEmails.add(convidado.email)
+                    }
+                })
+            }
+        })
+
         return {
             ...evento,
             latitude: evento.latitude || undefined,
@@ -88,16 +122,22 @@ export class EventoRepository {
                 emails: evento.convidados.map((convidado) => convidado.email),
             },
             check_ins: {
-                total: evento.convidados.filter((convidado) => convidado.dt_hora_check_in).length,
-                emails: evento.convidados
-                    .filter((convidado) => convidado.dt_hora_check_in)
-                    .map((convidado) => convidado.email),
+                total: evento.convidados.reduce(
+                    (acc, convidado) => acc + (convidado.check_ins ? convidado.check_ins.length : 0),
+                    0,
+                ),
+                emails: Array.from(checkInEmails),
             },
             check_outs: {
-                total: evento.convidados.filter((convidado) => convidado.dt_hora_check_out).length,
-                emails: evento.convidados
-                    .filter((convidado) => convidado.dt_hora_check_out)
-                    .map((convidado) => convidado.email),
+                total: evento.convidados.reduce(
+                    (acc, convidado) =>
+                        acc +
+                        (convidado.check_ins
+                            ? convidado.check_ins.filter((check_in) => check_in.dt_hora_check_out).length
+                            : 0),
+                    0,
+                ),
+                emails: Array.from(checkOutEmails),
             },
         }
     }
@@ -146,6 +186,7 @@ export class EventoRepository {
                     const convidadoModel = new ConvidadoEventoModel().build({
                         email: convidado,
                         id_evento: id,
+                        check_ins: [],
                     })
 
                     convidadoModelArray.push(convidadoModel)
@@ -193,7 +234,10 @@ export class EventoRepository {
     }
 
     async find({ status, nome, pagina, limite, cpf_convidado, cpf_organizador }) {
-        const query = this.dataSource.getRepository(EventoModel).createQueryBuilder('evento')
+        const query = this.dataSource
+            .getRepository(EventoModel)
+            .createQueryBuilder('evento')
+            .leftJoinAndSelect('evento.convidados', 'convidados')
 
         if (nome) {
             query.andWhere('evento.nome LIKE :nome', { nome: `%${nome}%` })
@@ -228,41 +272,61 @@ export class EventoRepository {
             query.skip((pagina - 1) * limite)
             query.take(limite)
         }
-        // Ordenar por dt_inicio, mas se for null, ordenar por dt_inicio_prevista
+
         query.addOrderBy('evento.dt_inicio', 'DESC')
         query.addOrderBy('evento.dt_inicio_prevista', 'DESC')
         const eventos = await query.getMany()
 
+        console.log(eventos)
+
         return {
-            eventos: [
-                eventos.map((evento) => ({
+            eventos: eventos.map((evento) => {
+                const checkInEmails = new Set<string>()
+                const checkOutEmails = new Set<string>()
+
+                evento.convidados.forEach((convidado) => {
+                    if (convidado.check_ins) {
+                        convidado.check_ins.forEach((check_in) => {
+                            if (check_in.dt_hora_check_in) {
+                                checkInEmails.add(convidado.email)
+                            }
+                            if (check_in.dt_hora_check_out) {
+                                checkOutEmails.add(convidado.email)
+                            }
+                        })
+                    }
+                })
+
+                return {
                     ...evento,
                     convidados: {
                         total: evento.convidados ? evento.convidados.length : 0,
                         emails: evento.convidados ? evento.convidados.map((convidado) => convidado.email) : [],
                     },
                     check_ins: {
-                        total: evento.convidados
-                            ? evento.convidados.filter((convidado) => convidado.dt_hora_check_in).length
-                            : 0,
-                        emails: evento.convidados
-                            ? evento.convidados
-                                  .filter((convidado) => convidado.dt_hora_check_in)
-                                  .map((convidado) => convidado.email)
-                            : [],
+                        total: evento.convidados.reduce(
+                            (acc, convidado) =>
+                                acc +
+                                (convidado.check_ins
+                                    ? convidado.check_ins.filter((check_in) => check_in.dt_hora_check_out).length
+                                    : 0),
+                            0,
+                        ),
+                        emails: Array.from(checkInEmails),
                     },
                     check_outs: {
-                        total: evento.convidados
-                            ? evento.convidados.filter((convidado) => convidado.dt_hora_check_out).length
-                            : 0,
-                        emails: evento.convidados
-                            ? evento.convidados
-                                  .filter((convidado) => convidado.dt_hora_check_out)
-                                  .map((convidado) => convidado.email)
-                            : [],
+                        total: evento.convidados.reduce(
+                            (acc, convidado) =>
+                                acc +
+                                (convidado.check_ins
+                                    ? convidado.check_ins.filter((check_in) => check_in.dt_hora_check_in).length
+                                    : 0),
+                            0,
+                        ),
+                        emails: Array.from(checkOutEmails),
                     },
-                })),
-            ],
+                }
+            }),
             paginacao: {
                 pagina: Number(pagina),
                 limite: Number(limite),
@@ -272,6 +336,7 @@ export class EventoRepository {
     }
 
     async checkIn(id_evento: string, convidado: Convidado) {
+        const dataCheckIn = new Date()
         const convidadoModel = await this.dataSource.getRepository(ConvidadoEventoModel).findOne({
             where: {
                 id_evento: id_evento,
@@ -283,9 +348,19 @@ export class EventoRepository {
             throw new NotFoundException('Convidado não encontrado nesse evento para realizar o check-in')
         }
 
-        if (convidadoModel.dt_hora_check_in) {
-            throw new Error('Check-in já realizado para esse convidado')
-        }
+        console.log(convidadoModel)
+
+        convidadoModel.check_ins?.find((check_in) => {
+            if (check_in.dt_hora_check_in != null && check_in.dt_hora_check_out == null) {
+                throw new BadRequestException('Check-in já realizado para esse convidado')
+            }
+        })
+
+        const novoCheckInModel = new CheckInsModel()
+        novoCheckInModel.id = ulid()
+        novoCheckInModel.dt_hora_check_in = dataCheckIn
+
+        convidadoModel.check_ins.push(novoCheckInModel)
 
         await this.dataSource.getRepository(ConvidadoEventoModel).update(
             {
@@ -293,17 +368,18 @@ export class EventoRepository {
                 email: convidado.email_convidado,
             },
             {
-                dt_hora_check_in: convidado.dt_hora_check_in,
+                check_ins: [...convidadoModel.check_ins],
             },
         )
 
         return {
             Message: 'Check-in realizado com sucesso!',
-            Data: convidado.dt_hora_check_in,
+            Data: dataCheckIn,
         }
     }
 
     async checkOut(id_evento: string, convidado: Convidado) {
+        const dataCheckOut = new Date()
         const convidadoModel = await this.dataSource.getRepository(ConvidadoEventoModel).findOne({
             where: {
                 id_evento: id_evento,
@@ -315,13 +391,32 @@ export class EventoRepository {
             throw new NotFoundException('Convidado não encontrado nesse evento para realizar o check-out')
         }
 
-        if (!convidadoModel.dt_hora_check_in) {
-            throw new Error('Check-in não realizado para esse convidado')
+        console.log(convidadoModel)
+
+        if (Array.isArray(convidadoModel.check_ins) && convidadoModel.check_ins.length === 0) {
+            throw new BadRequestException('Check-in não realizado para esse convidado')
         }
 
-        if (convidadoModel.dt_hora_check_out) {
-            throw new Error('Check-out já realizado para esse convidado')
+        convidadoModel.check_ins.find((check_in) => {
+            if (check_in.dt_hora_check_in == null && check_in.dt_hora_check_out == null) {
+                throw new BadRequestException('Check-in não realizado para esse convidado')
+            }
+        })
+
+        const checkOutPendente = convidadoModel.check_ins.find((checkIn) => {
+            return (
+                checkIn.dt_hora_check_in != null &&
+                (checkIn.dt_hora_check_out == null || checkIn.dt_hora_check_out === undefined)
+            )
+        })
+
+        if (checkOutPendente == null) {
+            throw new BadRequestException('Check-out já realizado para esse convidado')
         }
+
+        const checkOutIndex = convidadoModel.check_ins.findIndex((checkIn) => checkIn.id === checkOutPendente.id)
+
+        convidadoModel.check_ins[checkOutIndex].dt_hora_check_out = dataCheckOut
 
         await this.dataSource.getRepository(ConvidadoEventoModel).update(
             {
@@ -329,13 +424,13 @@ export class EventoRepository {
                 email: convidado.email_convidado,
             },
             {
-                dt_hora_check_out: convidado.dt_hora_check_out,
+                check_ins: [...convidadoModel.check_ins],
             },
         )
 
         return {
             Message: 'Check-out realizado com sucesso!',
-            Data: convidado.dt_hora_check_out,
+            Data: new Date(),
         }
     }
 }

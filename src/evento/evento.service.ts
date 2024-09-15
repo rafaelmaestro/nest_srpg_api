@@ -28,6 +28,8 @@ export class EventoService {
         createEventoDto.dt_inicio = undefined
         createEventoDto.dt_fim = undefined
 
+        console.log(createEventoDto)
+
         const eventoCriado = await this.eventoRepository.save(createEventoDto)
 
         if (eventoCriado) {
@@ -62,8 +64,6 @@ export class EventoService {
                 'Status informado não é válido, utilize: PENDENTE, EM ANDAMENTO, PAUSADO, FINALIZADO ou CANCELADO',
             )
         }
-
-        // TODO: proibir alterações num evento que já iniciou, exceto para finalizar ou pausar
 
         if (evento.status === StatusEvento.FINALIZADO || evento.status === StatusEvento.CANCELADO) {
             throw new BadRequestException('Não é possível alterar um evento que já foi finalizado ou cancelado')
@@ -170,7 +170,6 @@ export class EventoService {
         const convidado = new Convidado()
         convidado.email_convidado = checkInDto.email_convidado
         convidado.id_evento = id
-        convidado.dt_hora_check_in = new Date()
 
         return await this.eventoRepository.checkIn(convidado.id_evento, convidado)
     }
@@ -197,7 +196,6 @@ export class EventoService {
         const convidado = new Convidado()
         convidado.email_convidado = checkInDto.email_convidado
         convidado.id_evento = id
-        convidado.dt_hora_check_out = new Date()
 
         return await this.eventoRepository.checkOut(convidado.id_evento, convidado)
     }

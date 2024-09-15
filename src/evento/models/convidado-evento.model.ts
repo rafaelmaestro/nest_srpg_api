@@ -1,9 +1,11 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, UpdateDateColumn } from 'typeorm'
 import { EventoModel } from './evento.model'
+import { CheckInsModel } from './check-ins.model'
 
 export interface ConvidadoEvento {
     email: string
     id_evento: string
+    check_ins: CheckInsModel[]
 }
 
 @Entity('convidado_evento')
@@ -14,11 +16,8 @@ export class ConvidadoEventoModel extends BaseEntity {
     @Column({ name: 'id_evento', nullable: false, primary: true })
     id_evento: string
 
-    @Column()
-    dt_hora_check_in: Date
-
-    @Column()
-    dt_hora_check_out: Date
+    @Column({ name: 'check_ins', type: 'json', nullable: false, default: () => "'[]'" })
+    check_ins: CheckInsModel[]
 
     @ManyToOne(() => EventoModel, (evento) => evento.convidados, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
     @JoinColumn({ name: 'id_evento', referencedColumnName: 'id' })

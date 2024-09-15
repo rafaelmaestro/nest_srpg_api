@@ -30,8 +30,17 @@ export class AuthService {
                     senha: undefined,
                 }
             }
+
+            const isHashRecuperacaoSenhaValido = await bcrypt.compare(senha, usuario.hash_recuperacao_senha)
+
+            if (isHashRecuperacaoSenhaValido) {
+                return {
+                    ...usuario,
+                    senha: undefined,
+                }
+            }
         }
-        throw new UnauthorizedError('Email ou senha fornecidos estão incorretos.')
+        throw new UnauthorizedError('E-mail/CPF ou senha fornecidos estão incorretos.')
     }
 
     login(user: Usuario): UserToken {
