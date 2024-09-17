@@ -112,32 +112,34 @@ export class EventoRepository {
         })
 
         return {
-            ...evento,
-            latitude: evento.latitude || undefined,
-            longitude: evento.longitude || undefined,
-            dt_inicio: evento.dt_inicio || undefined,
-            dt_fim: evento.dt_fim || undefined,
-            convidados: {
-                total: evento.convidados.length,
-                emails: evento.convidados.map((convidado) => convidado.email),
-            },
-            check_ins: {
-                total: evento.convidados.reduce(
-                    (acc, convidado) => acc + (convidado.check_ins ? convidado.check_ins.length : 0),
-                    0,
-                ),
-                emails: Array.from(checkInEmails),
-            },
-            check_outs: {
-                total: evento.convidados.reduce(
-                    (acc, convidado) =>
-                        acc +
-                        (convidado.check_ins
-                            ? convidado.check_ins.filter((check_in) => check_in.dt_hora_check_out).length
-                            : 0),
-                    0,
-                ),
-                emails: Array.from(checkOutEmails),
+            evento: {
+                ...evento,
+                latitude: evento.latitude || null,
+                longitude: evento.longitude || null,
+                dt_inicio: evento.dt_inicio || null,
+                dt_fim: evento.dt_fim || null,
+                convidados: {
+                    total: evento.convidados.length,
+                    emails: evento.convidados.map((convidado) => convidado.email),
+                },
+                check_ins: {
+                    total: evento.convidados.reduce(
+                        (acc, convidado) => acc + (convidado.check_ins ? convidado.check_ins.length : 0),
+                        0,
+                    ),
+                    emails: Array.from(checkInEmails),
+                },
+                check_outs: {
+                    total: evento.convidados.reduce(
+                        (acc, convidado) =>
+                            acc +
+                            (convidado.check_ins
+                                ? convidado.check_ins.filter((check_in) => check_in.dt_hora_check_out).length
+                                : 0),
+                        0,
+                    ),
+                    emails: Array.from(checkOutEmails),
+                },
             },
         }
     }
@@ -348,8 +350,6 @@ export class EventoRepository {
             throw new NotFoundException('Convidado não encontrado nesse evento para realizar o check-in')
         }
 
-        console.log(convidadoModel)
-
         convidadoModel.check_ins?.find((check_in) => {
             if (check_in.dt_hora_check_in != null && check_in.dt_hora_check_out == null) {
                 throw new BadRequestException('Check-in já realizado para esse convidado')
@@ -373,8 +373,13 @@ export class EventoRepository {
         )
 
         return {
-            Message: 'Check-in realizado com sucesso!',
-            Data: dataCheckIn,
+            registros: convidadoModel.check_ins.map((checkIn) => {
+                return {
+                    id: checkIn.id,
+                    dt_hora_check_in: checkIn.dt_hora_check_in,
+                    dt_hora_check_out: checkIn.dt_hora_check_out || null,
+                }
+            }),
         }
     }
 

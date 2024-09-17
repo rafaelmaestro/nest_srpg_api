@@ -65,11 +65,11 @@ export class EventoService {
             )
         }
 
-        if (evento.status === StatusEvento.FINALIZADO || evento.status === StatusEvento.CANCELADO) {
+        if (evento.evento.status === StatusEvento.FINALIZADO || evento.evento.status === StatusEvento.CANCELADO) {
             throw new BadRequestException('Não é possível alterar um evento que já foi finalizado ou cancelado')
         }
 
-        if (evento.status === StatusEvento.EM_ANDAMENTO) {
+        if (evento.evento.status === StatusEvento.EM_ANDAMENTO) {
             if (updateEventoDto.status === StatusEvento.PENDENTE) {
                 throw new BadRequestException('Não é possível voltar um evento em andamento para pendente')
             }
@@ -163,7 +163,7 @@ export class EventoService {
             throw new NotFoundException(`Evento não encontrado com o ID informado: ${id}`)
         }
 
-        if (evento.status !== StatusEvento.EM_ANDAMENTO) {
+        if (evento.evento.status !== StatusEvento.EM_ANDAMENTO) {
             throw new BadRequestException('Check-in não permitido, o evento não está em andamento')
         }
 
@@ -189,7 +189,7 @@ export class EventoService {
             throw new NotFoundException(`Evento não encontrado com o ID informado: ${id}`)
         }
 
-        if (evento.status !== StatusEvento.EM_ANDAMENTO) {
+        if (evento.evento.status !== StatusEvento.EM_ANDAMENTO) {
             throw new BadRequestException('Check-out não permitido, o evento não está em andamento')
         }
 
