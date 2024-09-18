@@ -28,8 +28,6 @@ export class EventoService {
         createEventoDto.dt_inicio = undefined
         createEventoDto.dt_fim = undefined
 
-        console.log(createEventoDto)
-
         const eventoCriado = await this.eventoRepository.save(createEventoDto)
 
         if (eventoCriado) {
@@ -142,8 +140,6 @@ export class EventoService {
         if (limite && !pagina) {
             throw new BadRequestException('Informe o parâmetro pagina para a paginação')
         }
-
-        console.log('argumentos recebidos:', { status, nome, pagina, limite, cpf_convidado, cpf_organizador })
 
         return await this.eventoRepository.find({ status, nome, pagina, limite, cpf_convidado, cpf_organizador })
     }

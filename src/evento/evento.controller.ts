@@ -26,8 +26,6 @@ export class EventoController {
 
     @Post('check-in/:id')
     checkIn(@Param('id') id: string, @Body() checkInDto: CheckInDto) {
-        console.log(id)
-        console.log(checkInDto)
         return this.eventoService.checkIn(id, checkInDto)
     }
 

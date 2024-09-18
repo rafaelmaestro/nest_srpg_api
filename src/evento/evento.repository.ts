@@ -45,8 +45,6 @@ export class EventoRepository {
 
             const eventoCriado = await queryRunner.manager.save(EventoModel, eventoParaSalvar)
 
-            console.log(eventoCriado)
-
             await queryRunner.commitTransaction()
             return {
                 evento: {
@@ -263,8 +261,6 @@ export class EventoRepository {
         if (status) {
             const statusEnviados = status.split(',').map((status) => status.toUpperCase().trim())
 
-            console.log('statusEnviados:', statusEnviados)
-
             query.andWhere('evento.status IN (:...status)', { status: statusEnviados })
         }
 
@@ -278,8 +274,6 @@ export class EventoRepository {
         query.addOrderBy('evento.dt_inicio', 'DESC')
         query.addOrderBy('evento.dt_inicio_prevista', 'DESC')
         const eventos = await query.getMany()
-
-        console.log(eventos)
 
         return {
             eventos: eventos.map((evento) => {
@@ -396,8 +390,6 @@ export class EventoRepository {
             throw new NotFoundException('Convidado não encontrado nesse evento para realizar o check-out')
         }
 
-        console.log(convidadoModel)
-
         if (Array.isArray(convidadoModel.check_ins) && convidadoModel.check_ins.length === 0) {
             throw new BadRequestException('Check-in não realizado para esse convidado')
         }
@@ -434,8 +426,13 @@ export class EventoRepository {
         )
 
         return {
-            Message: 'Check-out realizado com sucesso!',
-            Data: new Date(),
+            registros: convidadoModel.check_ins.map((checkIn) => {
+                return {
+                    id: checkIn.id,
+                    dt_hora_check_in: checkIn.dt_hora_check_in,
+                    dt_hora_check_out: checkIn.dt_hora_check_out || null,
+                }
+            }),
         }
     }
 }
