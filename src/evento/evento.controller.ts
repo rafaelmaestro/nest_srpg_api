@@ -29,6 +29,11 @@ export class EventoController {
         return this.eventoService.checkIn(id, checkInDto)
     }
 
+    @Get('check-in/registros')
+    checkInRegistros(@Query('id_evento') id_evento: string, @Query('email_convidado') email_convidado: string) {
+        return this.eventoService.getRegistrosCheckIn(id_evento, email_convidado)
+    }
+
     @Post('check-out/:id')
     checkOut(@Param('id') id: string, @Body() checkInDto: CheckInDto) {
         return this.eventoService.checkOut(id, checkInDto)

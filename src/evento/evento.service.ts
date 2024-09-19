@@ -37,6 +37,18 @@ export class EventoService {
         return eventoCriado
     }
 
+    async getRegistrosCheckIn(id_evento: string, email_convidado: string) {
+        if (!id_evento) {
+            throw new BadRequestException('Informe o ID do evento para realizar a busca dos registros de check-in')
+        }
+
+        if (!email_convidado) {
+            throw new BadRequestException('Informe o e-mail do usuário para realizar a busca dos registros de check-in')
+        }
+
+        return await this.eventoRepository.getRegistrosCheckIn(id_evento, email_convidado)
+    }
+
     async update(id: string, updateEventoDto: UpdateEventoDto) {
         if (updateEventoDto.dt_fim != null && updateEventoDto.dt_inicio != null) {
             if (updateEventoDto.dt_fim < updateEventoDto.dt_inicio) {

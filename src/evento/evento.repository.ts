@@ -331,6 +331,29 @@ export class EventoRepository {
         }
     }
 
+    async getRegistrosCheckIn(id_evento: string, email_convidado: string) {
+        const convidadoModel = await this.dataSource.getRepository(ConvidadoEventoModel).findOne({
+            where: {
+                id_evento: id_evento,
+                email: email_convidado,
+            },
+        })
+
+        if (!convidadoModel) {
+            throw new NotFoundException('Convidado não encontrado nesse evento')
+        }
+
+        return {
+            registros: convidadoModel.check_ins.map((checkIn) => {
+                return {
+                    id: checkIn.id,
+                    dt_hora_check_in: checkIn.dt_hora_check_in,
+                    dt_hora_check_out: checkIn.dt_hora_check_out || null,
+                }
+            }),
+        }
+    }
+
     async checkIn(id_evento: string, convidado: Convidado) {
         const dataCheckIn = new Date()
         const convidadoModel = await this.dataSource.getRepository(ConvidadoEventoModel).findOne({
