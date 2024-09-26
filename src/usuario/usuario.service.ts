@@ -4,6 +4,8 @@ import { CreateUsuarioDto } from './dto/create-usuario.dto'
 import { UsuarioRepository } from './usuario.repository'
 import { foto } from './../../biometria-teste.d.ts.json'
 import { EMailerService } from '../mailer/mailer.service'
+import { UpdateUsuarioDto } from './dto/update-usuario.dto'
+import { Usuario } from './entities/usuario.entity'
 
 @Injectable()
 export class UsuarioService {
@@ -56,5 +58,25 @@ export class UsuarioService {
 
     findByCpf(cpf: string) {
         return this.usuarioRepository.findOneByCpf(cpf)
+    }
+
+    async updateUsuario(updateUsuarioDto: UpdateUsuarioDto, usuario: Usuario) {
+        if (!updateUsuarioDto.email && !updateUsuarioDto.cpf) {
+            throw new BadRequestException('O e-mail ou CPF são obrigatórios para atualização')
+        }
+
+        if (updateUsuarioDto.email && updateUsuarioDto.email !== usuario.email) {
+            throw new BadRequestException('Não é possível alterar informações de outro usuário')
+        }
+
+        if (updateUsuarioDto.cpf && updateUsuarioDto.cpf !== usuario.cpf) {
+            throw new BadRequestException('Não é possível alterar informações de outro usuário')
+        }
+
+        if (updateUsuarioDto.senha) {
+            updateUsuarioDto.senha = await bcrypt.hash(updateUsuarioDto.senha, 10)
+        }
+
+        return this.usuarioRepository.updateUsuario(updateUsuarioDto)
     }
 }
