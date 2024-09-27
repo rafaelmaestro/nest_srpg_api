@@ -52,12 +52,30 @@ export class UsuarioService {
         // TODO: enviar e-mail com a nova senha
     }
 
-    findByEmail(email: string) {
+    async findByEmail(email: string) {
         return this.usuarioRepository.findOneByEmail(email)
     }
 
-    findByCpf(cpf: string) {
+    async findByCpf(cpf: string) {
         return this.usuarioRepository.findOneByCpf(cpf)
+    }
+
+    async findUserWithCreatedAt(cpf: string) {
+        const usuario = await this.usuarioRepository.findOneByCpf(cpf)
+        if (!usuario) {
+            throw new NotFoundException('Usuário não encontrado')
+        }
+
+        return {
+            cpf: usuario.cpf,
+            nome: usuario.nome,
+            email: usuario.email,
+            dt_criacao: usuario.dt_criacao.toISOString(),
+            dt_ult_atualizacao: usuario.dt_ult_atualizacao.toISOString(),
+            biometria: {
+                id: usuario.biometria.id,
+            },
+        }
     }
 
     async updateUsuario(updateUsuarioDto: UpdateUsuarioDto, usuario: Usuario) {
