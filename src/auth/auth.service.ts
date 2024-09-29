@@ -31,12 +31,14 @@ export class AuthService {
                 }
             }
 
-            const isHashRecuperacaoSenhaValido = await bcrypt.compare(senha, usuario.hash_recuperacao_senha)
+            if (usuario.hash_recuperacao_senha) {
+                const isHashRecuperacaoSenhaValido = await bcrypt.compare(senha, usuario.hash_recuperacao_senha)
 
-            if (isHashRecuperacaoSenhaValido) {
-                return {
-                    ...usuario,
-                    senha: undefined,
+                if (isHashRecuperacaoSenhaValido) {
+                    return {
+                        ...usuario,
+                        senha: undefined,
+                    }
                 }
             }
         }

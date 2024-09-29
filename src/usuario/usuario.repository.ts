@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 import { ulid } from 'ulid'
+import * as bcrypt from 'bcrypt'
 import { CreateUsuarioDto } from './dto/create-usuario.dto'
 import { UsuarioExistenteError } from './errors/usuario-existente.error'
 import { BiometriaUsuarioModel } from './models/biometria.model'
@@ -96,26 +97,44 @@ export class UsuarioRepository {
             throw new BadRequestException('Usuário não encontrado')
         }
 
-        if (updateUsuarioDto.email) {
-            usuario.email = updateUsuarioDto.email
+        if (updateUsuarioDto.senha) {
+            if (!(await bcrypt.compare(updateUsuarioDto.senha_antiga, usuario.senha))) {
+                if (usuario.hash_recuperacao_senha) {
+                    const senhaValida = await bcrypt.compare(
+                        updateUsuarioDto.senha_antiga,
+                        usuario.hash_recuperacao_senha,
+                    )
+                    if (!senhaValida) {
+                        throw new BadRequestException('Senha antiga inválida')
+                    }
+                } else {
+                    throw new BadRequestException('Senha antiga inválida')
+                }
+            }
+
+            if (await bcrypt.compare(updateUsuarioDto.senha, usuario.senha)) {
+                throw new BadRequestException('A nova senha deve ser diferente da senha antiga')
+            }
+
+            usuario.senha = bcrypt.hashSync(updateUsuarioDto.senha, 10)
+        }
+
+        if (updateUsuarioDto.email_novo) {
+            usuario.email = updateUsuarioDto.email_novo
         }
 
         if (updateUsuarioDto.foto) {
             usuario.biometria.foto = updateUsuarioDto.foto
         }
 
-        if (updateUsuarioDto.senha) {
-            usuario.senha = updateUsuarioDto.senha
-        }
-
         const usuarioAlterado = await usuario.save()
 
         return {
-            usuario: {
-                cpf: usuarioAlterado.cpf,
-                nome: usuarioAlterado.nome,
-                email: usuarioAlterado.email,
-            },
+            cpf: usuarioAlterado.cpf,
+            nome: usuarioAlterado.nome,
+            email: usuarioAlterado.email,
+            dt_criacao: usuario.dt_criacao.toISOString(),
+            dt_ult_atualizacao: usuario.dt_ult_atualizacao.toISOString(),
             biometria: {
                 id: usuarioAlterado.biometria.id,
             },

@@ -91,8 +91,20 @@ export class UsuarioService {
             throw new BadRequestException('Não é possível alterar informações de outro usuário')
         }
 
-        if (updateUsuarioDto.senha) {
-            updateUsuarioDto.senha = await bcrypt.hash(updateUsuarioDto.senha, 10)
+        if (updateUsuarioDto.senha && !updateUsuarioDto.senha_antiga) {
+            throw new BadRequestException('A senha antiga é obrigatória para atualização da senha')
+        }
+
+        if (updateUsuarioDto.email_novo && updateUsuarioDto.email_novo === usuario.email) {
+            throw new BadRequestException('O novo e-mail deve ser diferente do e-mail atual')
+        }
+
+        if (
+            updateUsuarioDto.senha &&
+            updateUsuarioDto.senha_antiga &&
+            updateUsuarioDto.senha == updateUsuarioDto.senha_antiga
+        ) {
+            throw new BadRequestException('A nova senha deve ser diferente da senha antiga')
         }
 
         return this.usuarioRepository.updateUsuario(updateUsuarioDto)
