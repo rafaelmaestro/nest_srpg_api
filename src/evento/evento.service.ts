@@ -88,7 +88,7 @@ export class EventoService {
             }
         }
 
-        if (updateEventoDto.status === StatusEvento.EM_ANDAMENTO) {
+        if (updateEventoDto.status === StatusEvento.EM_ANDAMENTO && evento.evento.status != StatusEvento.PAUSADO) {
             if (updateEventoDto.latitude == null || updateEventoDto.longitude == null) {
                 throw new BadRequestException('Informe a latitude e longitude para iniciar o evento')
             }
