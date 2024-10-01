@@ -8,12 +8,14 @@ import { stat } from 'fs'
 import { Convidado } from './entities/convidado.entity'
 import e from 'express'
 import { CheckInDto } from './dto/check-in.dto'
+import { EMailerService } from '../mailer/mailer.service'
 
 @Injectable()
 export class EventoService {
     constructor(
         private readonly eventoRepository: EventoRepository,
         private readonly usuarioService: UsuarioService,
+        private readonly mailerService: EMailerService,
     ) {}
     async create(createEventoDto: CreateEventoDto) {
         const usuario = await this.usuarioService.findByCpf(createEventoDto.cpf_organizador)
@@ -31,10 +33,17 @@ export class EventoService {
         const eventoCriado = await this.eventoRepository.save(createEventoDto)
 
         if (eventoCriado) {
-            // TODO: Implementar envio de e-mail para os convidados
-        }
+            this.mailerService.sendMailConvidado({
+                nomeEvento: eventoCriado.evento.nome,
+                localEvento: eventoCriado.evento.local,
+                dataEvento: eventoCriado.evento.dt_inicio_prevista,
+                descricaoEvento: eventoCriado.evento.descricao,
+                nomeOrganizador: usuario.nome,
+                emailsDestinatarios: eventoCriado.evento.convidados.emails,
+            })
 
-        return eventoCriado
+            return eventoCriado
+        }
     }
 
     async getRegistrosCheckIn(id_evento: string, email_convidado: string) {
@@ -103,12 +112,84 @@ export class EventoService {
         const eventoAtualizado = await this.eventoRepository.update(id, updateEventoDto)
 
         if (eventoAtualizado) {
-            // TODO: implementar envio de notificação para os convidados
+            if (
+                eventoAtualizado.evento.status === StatusEvento.EM_ANDAMENTO &&
+                evento.evento.status === StatusEvento.PENDENTE
+            ) {
+                this.mailerService.sendMailEventoAtualizado({
+                    statusEvento: 'INICIADO',
+                    localEvento: eventoAtualizado.evento.local,
+                    nomeEvento: eventoAtualizado.evento.nome,
+                    dataAtualizacao: new Date(),
+                    emailsNotificados: eventoAtualizado.evento.convidados.emails,
+                })
+            }
+
+            if (
+                eventoAtualizado.evento.status === StatusEvento.FINALIZADO &&
+                evento.evento.status !== (StatusEvento.FINALIZADO as StatusEvento)
+            ) {
+                for (const emailCheckIn of evento.evento.check_ins.emails) {
+                    const registrosCheckIn = await this.getRegistrosCheckIn(id, emailCheckIn)
+
+                    if (registrosCheckIn.registros.length === 0) {
+                        continue
+                    }
+
+                    const checkOutPendente = registrosCheckIn.registros.find((r) => r.dt_hora_check_out == null)
+
+                    if (checkOutPendente) {
+                        await this.checkOut(id, { email_convidado: emailCheckIn, data: new Date() })
+                    }
+
+                    const tempoPermanencia = Math.abs(
+                        new Date(checkOutPendente.dt_hora_check_in).getTime() - new Date().getTime(),
+                    )
+
+                    this.mailerService.sendMailEventoAtualizado({
+                        statusEvento: 'FINALIZADO',
+                        localEvento: eventoAtualizado.evento.local,
+                        nomeEvento: eventoAtualizado.evento.nome,
+                        dataAtualizacao: new Date(),
+                        emailsNotificados: [emailCheckIn],
+                        tempoPermanencia: tempoPermanencia,
+                    })
+                }
+            }
+
+            if (eventoAtualizado.evento.status === StatusEvento.CANCELADO) {
+                this.mailerService.sendMailEventoAtualizado({
+                    statusEvento: 'CANCELADO',
+                    localEvento: eventoAtualizado.evento.local,
+                    nomeEvento: eventoAtualizado.evento.nome,
+                    dataAtualizacao: new Date(),
+                    emailsNotificados: eventoAtualizado.evento.convidados.emails,
+                })
+            }
+
+            if (eventoAtualizado.evento.status === StatusEvento.PAUSADO) {
+                this.mailerService.sendMailEventoAtualizado({
+                    statusEvento: 'PAUSADO',
+                    localEvento: eventoAtualizado.evento.local,
+                    nomeEvento: eventoAtualizado.evento.nome,
+                    dataAtualizacao: new Date(),
+                    emailsNotificados: eventoAtualizado.evento.convidados.emails,
+                })
+            }
+
+            if (
+                eventoAtualizado.evento.status === StatusEvento.EM_ANDAMENTO &&
+                evento.evento.status === StatusEvento.PAUSADO
+            ) {
+                this.mailerService.sendMailEventoAtualizado({
+                    statusEvento: 'RETOMADO',
+                    localEvento: eventoAtualizado.evento.local,
+                    nomeEvento: eventoAtualizado.evento.nome,
+                    dataAtualizacao: new Date(),
+                    emailsNotificados: eventoAtualizado.evento.convidados.emails,
+                })
+            }
         }
-
-        // TODO: Implementar check-out de todos os convidados que não realizaram o check-out
-        // TODO: Implementar pause e resume do evento
-
         return eventoAtualizado
     }
 
@@ -171,15 +252,11 @@ export class EventoService {
             throw new NotFoundException(`Evento não encontrado com o ID informado: ${id}`)
         }
 
-        if (evento.evento.status !== StatusEvento.EM_ANDAMENTO) {
-            throw new BadRequestException('Check-in não permitido, o evento não está em andamento')
-        }
-
         const convidado = new Convidado()
         convidado.email_convidado = checkInDto.email_convidado
         convidado.id_evento = id
 
-        return await this.eventoRepository.checkIn(convidado.id_evento, convidado)
+        return await this.eventoRepository.checkIn(convidado.id_evento, convidado, checkInDto.data)
     }
 
     async checkOut(id: string, checkInDto: CheckInDto) {
@@ -197,14 +274,10 @@ export class EventoService {
             throw new NotFoundException(`Evento não encontrado com o ID informado: ${id}`)
         }
 
-        if (evento.evento.status !== StatusEvento.EM_ANDAMENTO) {
-            throw new BadRequestException('Check-out não permitido, o evento não está em andamento')
-        }
-
         const convidado = new Convidado()
         convidado.email_convidado = checkInDto.email_convidado
         convidado.id_evento = id
 
-        return await this.eventoRepository.checkOut(convidado.id_evento, convidado)
+        return await this.eventoRepository.checkOut(convidado.id_evento, convidado, checkInDto.data)
     }
 }

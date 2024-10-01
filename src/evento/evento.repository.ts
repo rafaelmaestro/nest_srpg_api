@@ -354,8 +354,8 @@ export class EventoRepository {
         }
     }
 
-    async checkIn(id_evento: string, convidado: Convidado) {
-        const dataCheckIn = new Date()
+    async checkIn(id_evento: string, convidado: Convidado, data?: Date) {
+        const dataCheckIn = data || new Date()
         const convidadoModel = await this.dataSource.getRepository(ConvidadoEventoModel).findOne({
             where: {
                 id_evento: id_evento,
@@ -400,8 +400,8 @@ export class EventoRepository {
         }
     }
 
-    async checkOut(id_evento: string, convidado: Convidado) {
-        const dataCheckOut = new Date()
+    async checkOut(id_evento: string, convidado: Convidado, data?: Date) {
+        const dataCheckOut = data || new Date()
         const convidadoModel = await this.dataSource.getRepository(ConvidadoEventoModel).findOne({
             where: {
                 id_evento: id_evento,
