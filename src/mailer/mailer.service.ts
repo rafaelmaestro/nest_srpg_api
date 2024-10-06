@@ -7,14 +7,14 @@ import { SendMailRelatorioEventoGerado } from './interfaces/SendMailRelatorioEve
 @Injectable()
 export class EMailerService {
     constructor(private readonly mailerService: MailerService) {}
-    async sendMail(destinatario: string, assunto: string, corpo: string, html: string, attachments?: any) {
+    sendMail(destinatario: string, assunto: string, corpo: string, html: string, attachments?: any) {
         if (
             (process.env.APP_ENV && process.env.APP_ENV.toLocaleUpperCase() == 'DEV') ||
             process.env.APP_ENV.toLocaleUpperCase() == 'TEST'
         ) {
             destinatario = process.env.EMAIL_TEST
         }
-        await this.mailerService.sendMail({
+        this.mailerService.sendMail({
             to: destinatario,
             from: process.env.EMAIL_USER,
             subject: assunto,
@@ -24,7 +24,7 @@ export class EMailerService {
         })
     }
 
-    async sendMailConvidado(props: SendMailConvidado) {
+    sendMailConvidado(props: SendMailConvidado) {
         const { nomeEvento, localEvento, dataEvento, descricaoEvento, nomeOrganizador, emailsDestinatarios } = props
 
         const assunto = `Convite para o evento ${nomeEvento}!`
@@ -79,7 +79,7 @@ export class EMailerService {
                 <h1>Você foi convidado para o Evento <span class="highlight">${nomeEvento}</span></h1>
                 <p>Olá,</p>
                 <p>Você foi convidado para o evento <strong>${nomeEvento}</strong>, organizado por <strong>${nomeOrganizador}</strong>.</p>
-                <p>O evento ocorrerá em <strong>${dataEvento.toLocaleDateString('pt-BR')}</strong> no local <strong>${localEvento}</strong>.</p>
+                <p>O evento ocorrerá em <strong>${dataEvento.toLocaleDateString('pt-BR')} às ${dataEvento.toLocaleTimeString('pt-BR')}</strong> no local <strong>${localEvento}</strong>.</p>
                 <p><strong>Descrição do evento:</strong> ${descricaoEvento}</p>
                 <p>Acesse o app do <strong>SRPG</strong> para mais informações e confirmar sua participação!</p>
                 <div class="footer">
@@ -546,6 +546,7 @@ export class EMailerService {
             },
         ]
 
-        return await this.sendMail(props.emailOrganizador, assunto, null, html, attachments)
+        this.sendMail(props.emailOrganizador, assunto, null, html, attachments)
+        return true
     }
 }
