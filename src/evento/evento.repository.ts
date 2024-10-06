@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import { DataSource } from 'typeorm'
+import { DataSource, ILike } from 'typeorm'
 import { ulid } from 'ulid'
 import { CreateEventoDto } from './dto/create-evento.dto'
 import { ConvidadoEventoModel } from './models/convidado-evento.model'
@@ -485,6 +485,29 @@ export class EventoRepository {
                     dt_hora_check_out: checkIn.dt_hora_check_out || null,
                 }
             }),
+        }
+    }
+
+    async getListaConvidadosByNomeEvento(nomeEvento: string) {
+        const eventos = await this.dataSource.getRepository(EventoModel).find({
+            where: {
+                nome: ILike(`%${nomeEvento}%`),
+            },
+            order: {
+                dt_criacao: 'DESC',
+            },
+        })
+
+        if (!eventos) {
+            throw new NotFoundException('Evento não encontrado')
+        }
+
+        return {
+            nome: eventos[0].nome ? eventos[0].nome : null,
+            convidados: {
+                total: eventos[0].convidados.length || 0,
+                emails: eventos[0].convidados ? eventos[0].convidados.map((convidado) => convidado.email) : [],
+            },
         }
     }
 }

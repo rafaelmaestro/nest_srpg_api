@@ -38,7 +38,7 @@ export class EventoService {
             this.mailerService.sendMailConvidado({
                 nomeEvento: eventoCriado.evento.nome,
                 localEvento: eventoCriado.evento.local,
-                dataEvento: eventoCriado.evento.dt_inicio_prevista,
+                dataEvento: new Date(eventoCriado.evento.dt_inicio_prevista),
                 descricaoEvento: eventoCriado.evento.descricao,
                 nomeOrganizador: usuario.nome,
                 emailsDestinatarios: eventoCriado.evento.convidados.emails,
@@ -351,6 +351,10 @@ export class EventoService {
         }
 
         return response
+    }
+
+    async getListaConvidadosByNomeEvento(nomeEvento: string) {
+        return await this.eventoRepository.getListaConvidadosByNomeEvento(nomeEvento)
     }
 
     async generateReport(idEvento: string) {

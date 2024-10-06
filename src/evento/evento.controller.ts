@@ -75,4 +75,9 @@ export class EventoController {
     generateReport(@Param('id') id: string) {
         return this.eventoService.generateReport(id)
     }
+
+    @Get('/lista/convidados')
+    getListaConvidadosByNomeEvento(@Query('nome') nome: string) {
+        return this.eventoService.getListaConvidadosByNomeEvento(nome)
+    }
 }
