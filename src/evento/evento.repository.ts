@@ -52,6 +52,8 @@ export class EventoRepository {
                     nome: eventoCriado.nome,
                     status: eventoCriado.status,
                     descricao: eventoCriado.descricao,
+                    distancia_maxima_permitida: eventoCriado.distancia_maxima_permitida,
+                    minutos_tolerancia: eventoCriado.minutos_tolerancia,
                     dt_inicio_prevista: eventoCriado.dt_inicio_prevista,
                     dt_fim_prevista: eventoCriado.dt_fim_prevista,
                     local: eventoCriado.local,
@@ -116,6 +118,8 @@ export class EventoRepository {
                 longitude: evento.longitude || null,
                 dt_inicio: evento.dt_inicio || null,
                 dt_fim: evento.dt_fim || null,
+                distancia_maxima_permitida: evento.distancia_maxima_permitida,
+                minutos_tolerancia: evento.minutos_tolerancia,
                 convidados: {
                     total: evento.convidados.length,
                     emails: evento.convidados.map((convidado) => convidado.email),
@@ -295,6 +299,8 @@ export class EventoRepository {
 
                 return {
                     ...evento,
+                    distancia_maxima_permitida: evento.distancia_maxima_permitida,
+                    minutos_tolerancia: evento.minutos_tolerancia,
                     convidados: {
                         total: evento.convidados ? evento.convidados.length : 0,
                         emails: evento.convidados ? evento.convidados.map((convidado) => convidado.email) : [],
@@ -354,7 +360,7 @@ export class EventoRepository {
         }
     }
 
-    async checkIn(id_evento: string, convidado: Convidado, data?: Date) {
+    async checkIn(id_evento: string, convidado: Convidado, data?: Date, porcentagem_presenca?: number) {
         const dataCheckIn = data || new Date()
         const convidadoModel = await this.dataSource.getRepository(ConvidadoEventoModel).findOne({
             where: {
@@ -375,7 +381,28 @@ export class EventoRepository {
 
         const novoCheckInModel = new CheckInsModel()
         novoCheckInModel.id = ulid()
-        novoCheckInModel.dt_hora_check_in = dataCheckIn
+
+        if (porcentagem_presenca) {
+            const evento = await this.findById(id_evento)
+
+            if (!evento) {
+                throw new NotFoundException('Evento não encontrado')
+            }
+
+            const duracaoEvento = evento.evento.dt_fim.getTime() - evento.evento.dt_inicio.getTime()
+
+            const duracaoEventoEmMinutos = duracaoEvento / 60000
+
+            const tempoPermancenciaConvidado = porcentagem_presenca * duracaoEventoEmMinutos
+
+            novoCheckInModel.dt_hora_check_in = evento.evento.dt_inicio
+
+            const dataCheckOut = new Date(evento.evento.dt_inicio.getTime() + tempoPermancenciaConvidado * 60000)
+
+            novoCheckInModel.dt_hora_check_out = dataCheckOut
+        } else {
+            novoCheckInModel.dt_hora_check_in = dataCheckIn
+        }
 
         convidadoModel.check_ins.push(novoCheckInModel)
 
@@ -417,11 +444,13 @@ export class EventoRepository {
             throw new BadRequestException('Check-in não realizado para esse convidado')
         }
 
-        convidadoModel.check_ins.find((check_in) => {
-            if (check_in.dt_hora_check_in == null && check_in.dt_hora_check_out == null) {
-                throw new BadRequestException('Check-in não realizado para esse convidado')
-            }
+        const checkInNaoRealizado = convidadoModel.check_ins.find((check_in) => {
+            return check_in.dt_hora_check_in == null && check_in.dt_hora_check_out == null
         })
+
+        if (checkInNaoRealizado) {
+            throw new BadRequestException('Check-in não realizado para esse convidado')
+        }
 
         const checkOutPendente = convidadoModel.check_ins.find((checkIn) => {
             return (

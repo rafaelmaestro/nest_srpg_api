@@ -18,6 +18,12 @@ export class EventoModel extends BaseEntity {
     descricao: string
 
     @Column()
+    distancia_maxima_permitida: number
+
+    @Column()
+    minutos_tolerancia: number
+
+    @Column()
     dt_inicio_prevista: Date
 
     @Column()

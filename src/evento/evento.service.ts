@@ -9,6 +9,8 @@ import { Convidado } from './entities/convidado.entity'
 import e from 'express'
 import { CheckInDto } from './dto/check-in.dto'
 import { EMailerService } from '../mailer/mailer.service'
+import * as XLSX from 'xlsx'
+import * as fs from 'fs'
 
 @Injectable()
 export class EventoService {
@@ -256,7 +258,12 @@ export class EventoService {
         convidado.email_convidado = checkInDto.email_convidado
         convidado.id_evento = id
 
-        return await this.eventoRepository.checkIn(convidado.id_evento, convidado, checkInDto.data)
+        return await this.eventoRepository.checkIn(
+            convidado.id_evento,
+            convidado,
+            checkInDto.data,
+            checkInDto.porcentagem_presenca,
+        )
     }
 
     async checkOut(id: string, checkInDto: CheckInDto) {
@@ -279,5 +286,165 @@ export class EventoService {
         convidado.id_evento = id
 
         return await this.eventoRepository.checkOut(convidado.id_evento, convidado, checkInDto.data)
+    }
+
+    async getPresentes(idEvento: string) {
+        if (!idEvento) {
+            throw new BadRequestException('Informe o ID do evento para realizar a busca dos presentes')
+        }
+
+        const evento = await this.eventoRepository.findById(idEvento)
+
+        if (!evento) {
+            throw new NotFoundException(`Evento não encontrado com o ID informado: ${idEvento}`)
+        }
+
+        if (evento.evento.status != StatusEvento.FINALIZADO) {
+            throw new BadRequestException('Não é possível visualizar os presentes de um evento não finalizado')
+        }
+
+        const presentes = []
+        const ausentes = []
+
+        for (const email of evento.evento.check_ins.emails) {
+            const registrosCheckIn = await this.getRegistrosCheckIn(idEvento, email)
+
+            if (registrosCheckIn.registros.length === 0) {
+                continue
+            }
+
+            let tempoPermanencia = 0
+            for (const registro of registrosCheckIn.registros) {
+                if (registro.dt_hora_check_in && registro.dt_hora_check_out) {
+                    tempoPermanencia +=
+                        new Date(registro.dt_hora_check_out).getTime() - new Date(registro.dt_hora_check_in).getTime()
+                }
+            }
+
+            // Convert tempoPermanencia from milliseconds to hours and minutes
+            const totalMinutes = Math.floor(tempoPermanencia / 60000)
+            const hours = Math.floor(totalMinutes / 60)
+            const minutes = totalMinutes % 60
+            const formattedPermanencia = `${hours}h${minutes}m`
+
+            const presente = {
+                email: email,
+                permanencia: formattedPermanencia,
+            }
+
+            presentes.push(presente)
+        }
+
+        // TODO: colocar presente em ordem alfabética pelo email
+        // TODO: colocar presente em ordem alfabética pelo email
+        const presentesOrdenados = presentes.sort((a, b) => a.email.localeCompare(b.email))
+
+        for (const email of evento.evento.convidados.emails) {
+            if (!presentes.find((p) => p.email === email)) {
+                ausentes.push(email)
+            }
+        }
+
+        const response = {
+            presentes: presentesOrdenados,
+            ausentes: ausentes,
+        }
+
+        return response
+    }
+
+    async generateReport(idEvento: string) {
+        // TODO: Gerar uma planilha com o email do convidado, e todos os check-ins e check-outs realizados, além do tempo de permanência numa coluna separada.
+        // TODO: Para gerar a planilha, pegar o usuário que mais fez check-in e check-out, dessa forma, será possível determinar quantas colunas de check-in e check-out serão necessárias.
+        // TODO: O tempo de permanência deve ser calculado em horas e minutos.
+        // TODO: O arquivo deve ser salvo no formato .xlsx e enviado por e-mail para o organizador do evento.
+        if (!idEvento) {
+            throw new BadRequestException('Informe o ID do evento para gerar o relatório')
+        }
+
+        const evento = await this.eventoRepository.findById(idEvento)
+
+        if (!evento) {
+            throw new NotFoundException(`Evento não encontrado com o ID informado: ${idEvento}`)
+        }
+
+        if (evento.evento.status !== StatusEvento.FINALIZADO) {
+            throw new BadRequestException('Não é possível gerar um relatório de um evento que não foi finalizado')
+        }
+
+        const registros = []
+        const emails = new Set(evento.evento.check_ins.emails)
+        let maxCheckIns = 0
+
+        for (const email of emails) {
+            const registrosCheckIn = await this.getRegistrosCheckIn(idEvento, email)
+            const checkIns = registrosCheckIn.registros.map((registro) => ({
+                checkIn: registro.dt_hora_check_in,
+                checkOut: registro.dt_hora_check_out,
+            }))
+
+            if (checkIns.length > maxCheckIns) {
+                maxCheckIns = checkIns.length
+            }
+
+            let tempoPermanencia = 0
+            for (const registro of registrosCheckIn.registros) {
+                if (registro.dt_hora_check_in && registro.dt_hora_check_out) {
+                    tempoPermanencia +=
+                        new Date(registro.dt_hora_check_out).getTime() - new Date(registro.dt_hora_check_in).getTime()
+                }
+            }
+
+            const totalMinutes = Math.floor(tempoPermanencia / 60000)
+            const hours = Math.floor(totalMinutes / 60)
+            const minutes = totalMinutes % 60
+            const formattedPermanencia = `${hours}h${minutes}m`
+
+            registros.push({
+                email: email,
+                checkIns: checkIns,
+                permanencia: formattedPermanencia,
+            })
+        }
+
+        const worksheetData = []
+        const header = ['Email']
+        for (let i = 1; i <= maxCheckIns; i++) {
+            header.push(`Check-in ${i}`, `Check-out ${i}`)
+        }
+        header.push('Tempo de Permanência')
+        worksheetData.push(header)
+
+        for (const registro of registros) {
+            const row = [registro.email]
+            for (const checkIn of registro.checkIns) {
+                row.push(checkIn.checkIn || '', checkIn.checkOut || '')
+            }
+            while (row.length < header.length - 1) {
+                row.push('', '')
+            }
+            row.push(registro.permanencia)
+            worksheetData.push(row)
+        }
+
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
+        const workbook = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Relatório')
+        const filePath = `./reports/relatorio_${idEvento}.xlsx`
+        XLSX.writeFile(workbook, filePath)
+
+        // Convert the file to base64
+        const fileContent = fs.readFileSync(filePath)
+        const base64File = fileContent.toString('base64')
+
+        this.mailerService.sendMailRelatorioEventoGerado({
+            nomeEvento: evento.evento.nome,
+            dataEvento: evento.evento.dt_inicio_prevista,
+            emailOrganizador: evento.evento.cpf_organizador,
+            fileName: `relatorio_${idEvento}.xlsx`,
+            file: base64File,
+        })
+
+        return true
     }
 }

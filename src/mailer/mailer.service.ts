@@ -2,11 +2,12 @@ import { MailerService } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
 import { SendMailEventoAtualizado } from './interfaces/SendMailEventoAtualizado'
 import { SendMailConvidado } from './interfaces/SendMailConvidado'
+import { SendMailRelatorioEventoGerado } from './interfaces/SendMailRelatorioEventoGerado'
 
 @Injectable()
 export class EMailerService {
     constructor(private readonly mailerService: MailerService) {}
-    async sendMail(destinatario: string, assunto: string, corpo: string, html: string) {
+    async sendMail(destinatario: string, assunto: string, corpo: string, html: string, attachments?: any) {
         if (
             (process.env.APP_ENV && process.env.APP_ENV.toLocaleUpperCase() == 'DEV') ||
             process.env.APP_ENV.toLocaleUpperCase() == 'TEST'
@@ -19,6 +20,7 @@ export class EMailerService {
             subject: assunto,
             text: corpo,
             html: html,
+            attachments: attachments,
         })
     }
 
@@ -469,5 +471,81 @@ export class EMailerService {
         emailsNotificados.forEach((email) => {
             this.sendMail(email, assunto, null, html)
         })
+    }
+
+    async sendMailRelatorioEventoGerado(props: SendMailRelatorioEventoGerado) {
+        const dataGeracao = new Date()
+        const assunto = `Relatório do Evento "${props.nomeEvento}" Gerado!`
+        const html = `
+                            <html lang="pt-BR">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Relatório do Evento Gerado - SRPG</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            background-color: #f4f4f4;
+                            color: #333;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        .email-container {
+                            background-color: #ffffff;
+                            border-radius: 10px;
+                            max-width: 600px;
+                            margin: auto;
+                            padding: 20px;
+                            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                        }
+                        h1 {
+                            color: #e67e22;
+                            font-size: 24px;
+                            text-align: center;
+                        }
+                        p {
+                            line-height: 1.6;
+                        }
+                        .highlight {
+                            color: #d35400;
+                            font-weight: bold;
+                        }
+                        .footer {
+                            margin-top: 30px;
+                            text-align: center;
+                            font-size: 12px;
+                            color: #888;
+                        }
+                        .footer a {
+                            color: #3498db;
+                            text-decoration: none;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="email-container">
+                        <h1>Relatório Gerado para o Evento <span class="highlight">${props.nomeEvento}</span></h1>
+                        <p>Olá,</p>
+                        <p>O relatório para o evento <strong>${props.nomeEvento}</strong>, realizado em <strong>${props.dataEvento.toLocaleDateString('pt-BR')}</strong>, foi gerado com sucesso e está disponível em anexo.</p>
+                        <p>Para mais informações sobre o evento, acesse o app do <strong>SRPG</strong>.</p>
+                        <p>Data de geração do relatório: <strong>${dataGeracao.toLocaleDateString('pt-BR')} às ${dataGeracao.toLocaleTimeString('pt-BR')}</strong>.</p>
+                        <div class="footer">
+                            <p>Este é um email automático enviado pelo sistema <strong>SRPG</strong>. Por favor, não responda a este email.</p>
+                            <p><a href="https://srpg.app">Visite nosso site</a></p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+        `
+
+        const attachments = [
+            {
+                filename: props.fileName,
+                content: props.file,
+                encondig: 'base64',
+            },
+        ]
+
+        return await this.sendMail(props.emailOrganizador, assunto, null, html, attachments)
     }
 }

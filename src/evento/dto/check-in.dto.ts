@@ -1,4 +1,4 @@
-import { IsDate, IsEmail, IsOptional } from 'class-validator'
+import { IsDate, IsEmail, IsNumber, IsOptional } from 'class-validator'
 
 export class CheckInDto {
     @IsEmail()
@@ -7,4 +7,8 @@ export class CheckInDto {
     @IsOptional()
     @IsDate()
     data?: Date
+
+    @IsOptional()
+    @IsNumber()
+    porcentagem_presenca?: number
 }

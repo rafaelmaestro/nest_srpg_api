@@ -65,4 +65,14 @@ export class EventoController {
     remove(@Param('id') id: string) {
         return this.eventoService.remove(id)
     }
+
+    @Get('/:id/presentes')
+    getPresentes(@Param('id') id: string) {
+        return this.eventoService.getPresentes(id)
+    }
+
+    @Post('/:id/relatorio')
+    generateReport(@Param('id') id: string) {
+        return this.eventoService.generateReport(id)
+    }
 }

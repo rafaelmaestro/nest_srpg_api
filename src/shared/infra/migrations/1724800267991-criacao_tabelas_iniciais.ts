@@ -32,28 +32,13 @@ export class CriacaoTabelasIniciais1724800267991 implements MigrationInterface {
         )
 
         await queryRunner.query(
-            `CREATE TABLE IF NOT EXISTS public.localizacao_usuario (
-                latitude VARCHAR(255) NOT NULL,
-                longitude VARCHAR(255) NULL,
-                dt_criacao DATETIME NOT NULL DEFAULT NOW(),
-                dt_ult_atualizacao DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
-                id VARCHAR(155) NOT NULL,
-                cpf_usuario VARCHAR(15) NOT NULL,
-                PRIMARY KEY (id),
-                INDEX id_usuario_idx (cpf_usuario),
-                UNIQUE INDEX cpf_usuario_UNIQUE (cpf_usuario),
-                CONSTRAINT cpf_usuario
-                    FOREIGN KEY (cpf_usuario)
-                    REFERENCES public.usuario (cpf)
-        )`,
-        )
-
-        await queryRunner.query(
             `CREATE TABLE IF NOT EXISTS public.evento (
                 id VARCHAR(155) NOT NULL,
                 nome VARCHAR(255) NOT NULL,
                 status ENUM('PENDENTE', 'EM_ANDAMENTO', 'FINALIZADO', 'CANCELADO', 'PAUSADO') NOT NULL,
                 descricao VARCHAR(255) NOT NULL,
+                distancia_maxima_permitida INT DEFAULT 10,
+                minutos_tolerancia INT DEFAULT 10,
                 dt_inicio_prevista DATETIME NOT NULL,
                 dt_fim_prevista DATETIME NOT NULL,
                 latitude VARCHAR(155),
