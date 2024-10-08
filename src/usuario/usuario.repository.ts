@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { DataSource } from 'typeorm'
 import { ulid } from 'ulid'
 import * as bcrypt from 'bcrypt'
@@ -57,7 +57,7 @@ export class UsuarioRepository {
     }
 
     async findOneByCpf(cpf: string) {
-        const usuario = await UsuarioModel.findOne({ where: { cpf }, relations: ['biometria'] })
+        const usuario = await UsuarioModel.findOne({ where: { cpf } })
 
         return usuario
     }
@@ -94,7 +94,7 @@ export class UsuarioRepository {
         }
 
         if (!usuario) {
-            throw new BadRequestException('Usuário não encontrado')
+            throw new NotFoundException('Usuário não encontrado')
         }
 
         if (updateUsuarioDto.senha) {

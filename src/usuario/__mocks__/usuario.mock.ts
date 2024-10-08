@@ -6,13 +6,8 @@ export const mockUsuario = {
             cpf: '12345678901',
             nome: 'Usuario 1',
             senha: '123456',
-            telefone: '123456789',
             email: 'teste@gmail.com',
-            cep: '123456',
-            cidade: 'Cidade',
-            endereco: 'Endereco',
-            estado: 'Estado',
-            rua: 'Rua',
+            foto: 'foto',
         } as unknown as CreateUsuarioDto
     },
 }

@@ -36,20 +36,20 @@ export class UsuarioService {
         const usuario = await this.usuarioRepository.findOneByEmail(email)
 
         if (!usuario) {
-            return
+            throw new NotFoundException('Usuário não encontrado')
         }
 
         const novaSenha = Math.random().toString(36).slice(-8)
         usuario.hash_recuperacao_senha = await bcrypt.hash(novaSenha, 10)
 
         await this.usuarioRepository.setHashRecuperacaoSenha(email, usuario.hash_recuperacao_senha)
-        await this.emailerService.sendMail(
-            'rafaelmaestro@live.com',
+
+        this.emailerService.sendMail(
+            email,
             'Recuperação de senha',
             `Sua nova senha é: ${novaSenha}`,
             `Sua nova senha é: <b>${novaSenha}</b>`,
         )
-        // TODO: enviar e-mail com a nova senha
     }
 
     async findByEmail(email: string) {

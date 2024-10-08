@@ -43,29 +43,4 @@ export class UsuarioController {
     async getUsuario(@Param('cpf') cpf: string) {
         return await this.usuarioService.findUserWithCreatedAt(cpf)
     }
-
-    // @Get('/relatorio')
-    // async getRelatorioUsuarios(@CurrentUser() user: Usuario) {
-    //     return await this.usuarioService.getRelatorioUsuarios(user.cpf)
-    // }
-
-    // @Get('/:cpf')
-    // async findByCpf(@Param('cpf') cpf: string) {
-    //     const usuario = await this.usuarioService.findByCpf(cpf)
-    //     return {
-    //         ...usuario,
-    //         senha: undefined,
-    //     }
-    // }
-
-    // @Get('/:cpf/enderecos')
-    // async findEnderecosByCpf(@Param('cpf') cpf: string) {
-    //     const usuario = await this.usuarioService.findByCpf(cpf)
-    //     return usuario.enderecos
-    // }
-
-    // @Put('/:cpf/enderecos')
-    // async addEndereco(@Param('cpf') cpf: string, @Body() createEnderecoDto: CreateEnderecoDto) {
-    //     return await this.usuarioService.addEndereco(cpf, createEnderecoDto)
-    // }
 }
