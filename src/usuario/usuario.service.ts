@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
-import { CreateUsuarioDto } from './dto/create-usuario.dto'
-import { UsuarioRepository } from './usuario.repository'
-import { foto } from './../../biometria-teste.d.ts.json'
 import { EMailerService } from '../mailer/mailer.service'
+import { foto } from './../../biometria-teste.d.ts.json'
+import { CreateUsuarioDto } from './dto/create-usuario.dto'
 import { UpdateUsuarioDto } from './dto/update-usuario.dto'
 import { Usuario } from './entities/usuario.entity'
+import { UsuarioRepository } from './usuario.repository'
 
 @Injectable()
 export class UsuarioService {
@@ -61,7 +61,7 @@ export class UsuarioService {
     }
 
     async findUserWithCreatedAt(cpf: string) {
-        const usuario = await this.usuarioRepository.findOneByCpf(cpf)
+        const usuario = await this.usuarioRepository.findOneByCpfWithBiometria(cpf)
         if (!usuario) {
             throw new NotFoundException('Usuário não encontrado')
         }

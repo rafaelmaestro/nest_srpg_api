@@ -1,13 +1,13 @@
+import { NotFoundException } from '@nestjs/common'
 import { ulid } from 'ulid'
 import { setEnv } from '../../config'
 import { EMailerService } from '../mailer/mailer.service'
 import { mockUsuario } from './__mocks__/usuario.mock'
-import { UsuarioRepository } from './usuario.repository'
-import { UsuarioService } from './usuario.service'
 import { UsuarioExistenteError } from './errors/usuario-existente.error'
-import { NotFoundException } from '@nestjs/common'
 import { mockUsuarioModel } from './models/__mocks__/usuario.model.mock'
 import { UsuarioModel } from './models/usuario.model'
+import { UsuarioRepository } from './usuario.repository'
+import { UsuarioService } from './usuario.service'
 
 setEnv()
 
@@ -214,7 +214,7 @@ describe(`${UsuarioService.name} suite`, () => {
         it(`deve lancar uma exceção NotFoundException caso o usuário não seja encontrado`, async () => {
             const { sut, usuarioRepositoryMock } = sutFactory()
 
-            jest.spyOn(usuarioRepositoryMock, 'findOneByCpf').mockResolvedValueOnce(null)
+            jest.spyOn(usuarioRepositoryMock, 'findOneByCpfWithBiometria').mockResolvedValueOnce(null)
 
             try {
                 await sut.findUserWithCreatedAt('cpf')
@@ -237,7 +237,9 @@ describe(`${UsuarioService.name} suite`, () => {
             recover: jest.fn(),
         }
 
-        jest.spyOn(usuarioRepositoryMock, 'findOneByCpf').mockResolvedValueOnce(usuarioModel as unknown as UsuarioModel)
+        jest.spyOn(usuarioRepositoryMock, 'findOneByCpfWithBiometria').mockResolvedValueOnce(
+            usuarioModel as unknown as UsuarioModel,
+        )
 
         const result = await sut.findUserWithCreatedAt('cpf')
 
