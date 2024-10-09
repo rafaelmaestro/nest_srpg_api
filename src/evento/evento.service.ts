@@ -1,16 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import { UsuarioService } from '../usuario/usuario.service'
-import { CreateEventoDto } from './dto/create-evento.dto'
-import { EventoRepository } from './evento.repository'
-import { StatusEvento } from './entities/evento.entity'
-import { UpdateEventoDto } from './dto/update-evento.dto'
-import { stat } from 'fs'
-import { Convidado } from './entities/convidado.entity'
-import e from 'express'
-import { CheckInDto } from './dto/check-in.dto'
-import { EMailerService } from '../mailer/mailer.service'
-import * as XLSX from 'xlsx'
 import * as fs from 'fs'
+import * as XLSX from 'xlsx'
+import { EMailerService } from '../mailer/mailer.service'
+import { UsuarioService } from '../usuario/usuario.service'
+import { CheckInDto } from './dto/check-in.dto'
+import { CreateEventoDto } from './dto/create-evento.dto'
+import { UpdateEventoDto } from './dto/update-evento.dto'
+import { Convidado } from './entities/convidado.entity'
+import { StatusEvento } from './entities/evento.entity'
+import { EventoRepository } from './evento.repository'
 
 @Injectable()
 export class EventoService {
@@ -144,9 +142,13 @@ export class EventoService {
                         await this.checkOut(id, { email_convidado: emailCheckIn, data: new Date() })
                     }
 
-                    const tempoPermanencia = Math.abs(
-                        new Date(checkOutPendente.dt_hora_check_in).getTime() - new Date().getTime(),
-                    )
+                    let tempoPermanencia = 0
+
+                    if (checkOutPendente.dt_hora_check_in != null) {
+                        tempoPermanencia = Math.abs(
+                            new Date(checkOutPendente.dt_hora_check_in).getTime() - new Date().getTime(),
+                        )
+                    }
 
                     this.mailerService.sendMailEventoAtualizado({
                         statusEvento: 'FINALIZADO',

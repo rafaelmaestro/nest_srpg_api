@@ -1,7 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
-import { SendMailEventoAtualizado } from './interfaces/SendMailEventoAtualizado'
 import { SendMailConvidado } from './interfaces/SendMailConvidado'
+import { SendMailEventoAtualizado } from './interfaces/SendMailEventoAtualizado'
 import { SendMailRelatorioEventoGerado } from './interfaces/SendMailRelatorioEventoGerado'
 
 @Injectable()
@@ -26,6 +26,30 @@ export class EMailerService {
 
     sendMailConvidado(props: SendMailConvidado) {
         const { nomeEvento, localEvento, dataEvento, descricaoEvento, nomeOrganizador, emailsDestinatarios } = props
+
+        if (!nomeEvento) {
+            return 'Nome do evento é obrigatório'
+        }
+
+        if (!localEvento) {
+            return 'Local do evento é obrigatório'
+        }
+
+        if (!dataEvento) {
+            return 'Data do evento é obrigatória'
+        }
+
+        if (!descricaoEvento) {
+            return 'Descrição do evento é obrigatória'
+        }
+
+        if (!nomeOrganizador) {
+            return 'Nome do organizador é obrigatório'
+        }
+
+        if (!emailsDestinatarios || emailsDestinatarios.length == 0) {
+            return 'Pelo menos um email de destinatário é obrigatório'
+        }
 
         const assunto = `Convite para o evento ${nomeEvento}!`
 
@@ -95,8 +119,32 @@ export class EMailerService {
         })
     }
 
-    async sendMailEventoAtualizado(props: SendMailEventoAtualizado) {
+    sendMailEventoAtualizado(props: SendMailEventoAtualizado) {
         const { statusEvento, localEvento, nomeEvento, dataAtualizacao, emailsNotificados, tempoPermanencia } = props
+
+        if (!statusEvento) {
+            return 'Status do evento é obrigatório'
+        }
+
+        if (!localEvento) {
+            return 'Local do evento é obrigatório'
+        }
+
+        if (!nomeEvento) {
+            return 'Nome do evento é obrigatório'
+        }
+
+        if (!dataAtualizacao) {
+            return 'Data de atualização do evento é obrigatória'
+        }
+
+        if (!emailsNotificados || emailsNotificados.length == 0) {
+            return 'Pelo menos um email de destinatário é obrigatório'
+        }
+
+        if (tempoPermanencia == null || tempoPermanencia == undefined) {
+            return 'Tempo de permanência no evento é obrigatório'
+        }
 
         if (statusEvento == 'INICIADO') {
             this._sendMailEventoIniciado(localEvento, nomeEvento, dataAtualizacao, emailsNotificados)
@@ -473,7 +521,27 @@ export class EMailerService {
         })
     }
 
-    async sendMailRelatorioEventoGerado(props: SendMailRelatorioEventoGerado) {
+    sendMailRelatorioEventoGerado(props: SendMailRelatorioEventoGerado) {
+        if (!props.emailOrganizador) {
+            return 'Email do organizador é obrigatório'
+        }
+
+        if (!props.nomeEvento) {
+            return 'Nome do evento é obrigatório'
+        }
+
+        if (!props.dataEvento) {
+            return 'Data do evento é obrigatória'
+        }
+
+        if (!props.file) {
+            return 'Arquivo do relatório é obrigatório'
+        }
+
+        if (!props.fileName) {
+            return 'Nome do arquivo do relatório é obrigatório'
+        }
+
         const dataGeracao = new Date()
         const assunto = `Relatório do Evento "${props.nomeEvento}" Gerado!`
         const html = `
