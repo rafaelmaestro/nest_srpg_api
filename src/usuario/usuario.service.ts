@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
 import { EMailerService } from '../mailer/mailer.service'
 import { foto } from './../../biometria-teste.d.ts.json'
@@ -108,5 +108,26 @@ export class UsuarioService {
         }
 
         return this.usuarioRepository.updateUsuario(updateUsuarioDto)
+    }
+
+    associateToken(email: string, token: string) {
+        this.usuarioRepository.associateToken(email, token)
+
+        this.emailerService.sendMail(
+            email,
+            'Token de verificação',
+            null,
+            `Insira o token para realizar login no SRPG: <b>${token}</b>`,
+        )
+    }
+
+    async compareToken(token: string, usuario: Usuario) {
+        const tokenValido = await this.usuarioRepository.findOneByCpf(usuario.cpf)
+
+        if (tokenValido.token_email != token) {
+            throw new UnauthorizedException('Token inválido')
+        }
+
+        return true
     }
 }

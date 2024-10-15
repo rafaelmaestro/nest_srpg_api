@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import * as bcrypt from 'bcrypt'
 import { DataSource } from 'typeorm'
 import { ulid } from 'ulid'
-import * as bcrypt from 'bcrypt'
 import { CreateUsuarioDto } from './dto/create-usuario.dto'
+import { UpdateUsuarioDto } from './dto/update-usuario.dto'
 import { UsuarioExistenteError } from './errors/usuario-existente.error'
 import { BiometriaUsuarioModel } from './models/biometria.model'
 import { UsuarioModel } from './models/usuario.model'
-import { UpdateUsuarioDto } from './dto/update-usuario.dto'
 
 @Injectable()
 export class UsuarioRepository {
@@ -139,5 +139,17 @@ export class UsuarioRepository {
                 id: usuarioAlterado.biometria.id,
             },
         }
+    }
+
+    async associateToken(email: string, token: string) {
+        const usuario = await this.findOneByEmail(email)
+
+        if (!usuario) {
+            return
+        }
+
+        usuario.token_email = token
+
+        await usuario.save()
     }
 }

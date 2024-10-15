@@ -8,6 +8,7 @@ export class CriacaoTabelasIniciais1724800267991 implements MigrationInterface {
                 email VARCHAR(155) NOT NULL,
                 nome VARCHAR(155) NOT NULL,
                 hash_recuperacao_senha VARCHAR(255),
+                token_email VARCHAR(15),
                 dt_criacao DATETIME NOT NULL DEFAULT NOW(),
                 dt_ult_atualizacao DATETIME NOT NULL DEFAULT NOW() ON UPDATE NOW(),
                 senha VARCHAR(255) NOT NULL,

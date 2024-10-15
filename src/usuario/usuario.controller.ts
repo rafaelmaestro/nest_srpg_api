@@ -1,12 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, UseFilters } from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, UseFilters } from '@nestjs/common'
+import { CurrentUser } from '../auth/decorators/current-user.decorator'
 import { IsPublic } from '../auth/decorators/is-public.decorator'
 import { CreateUsuarioDto } from './dto/create-usuario.dto'
-import { UsuarioExistenteFilter } from './filters/usuario-existente.filter'
-import { UsuarioService } from './usuario.service'
 import { RecuperarSenhaDto } from './dto/recuperar-senha.dto'
 import { UpdateUsuarioDto } from './dto/update-usuario.dto'
-import { CurrentUser } from '../auth/decorators/current-user.decorator'
 import { Usuario } from './entities/usuario.entity'
+import { UsuarioExistenteFilter } from './filters/usuario-existente.filter'
+import { UsuarioService } from './usuario.service'
 
 @Controller('usuario')
 export class UsuarioController {
@@ -42,5 +42,11 @@ export class UsuarioController {
     @Get('/:cpf')
     async getUsuario(@Param('cpf') cpf: string) {
         return await this.usuarioService.findUserWithCreatedAt(cpf)
+    }
+
+    @HttpCode(200)
+    @Post('/token')
+    compareToken(@Body() props: { token: string }, @CurrentUser() usuario: Usuario) {
+        return this.usuarioService.compareToken(props.token, usuario)
     }
 }

@@ -15,6 +15,7 @@ export const mockUsuarioModel = {
                 dt_criacao: '2024-09-15T00:33:51.000Z',
                 dt_ult_atualizacao: '2024-09-15T00:33:51.000Z',
             },
+            token_email: '123456789',
         }
     },
 }

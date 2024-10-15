@@ -55,6 +55,10 @@ export class AuthService {
 
         const jwtToken = this.jwtService.sign(payload)
 
+        const token = Math.random().toString(36).slice(-8)
+
+        this.usuarioService.associateToken(user.email, token)
+
         return {
             access_token: jwtToken,
         }
