@@ -20,7 +20,7 @@ export class UsuarioRepository {
             const usuarioExistente = await this.findOneByCpf(usuario.cpf)
 
             if (usuarioExistente) {
-                throw new UsuarioExistenteError()
+                throw new UsuarioExistenteError('Usuário já cadastrado')
             }
 
             const usuarioParaSalvar = {
