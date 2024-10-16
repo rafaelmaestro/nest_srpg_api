@@ -355,4 +355,63 @@ describe(`${UsuarioService.name} suite`, () => {
             expect(usuarioRepositoryMock.updateUsuario).toHaveBeenCalledTimes(1)
         })
     })
+
+    describe(`${UsuarioService.prototype.associateToken.name}()`, () => {
+        it(`deve estar definido`, () => {
+            const { sut } = sutFactory()
+            expect(sut.associateToken).toBeDefined()
+        })
+
+        it(`deve chamar o método associateToken do repositório e enviar e-mail para o usuário com o token associado`, async () => {
+            const { sut, usuarioRepositoryMock } = sutFactory()
+
+            const usuario = mockUsuarioModel.usuarioModel1()
+
+            jest.spyOn(usuarioRepositoryMock, 'associateToken').mockResolvedValueOnce(null)
+            jest.spyOn(EmailerServiceMock.prototype, 'sendMail').mockResolvedValueOnce(null)
+
+            const result = sut.associateToken(usuario.email, 'token')
+
+            expect(usuarioRepositoryMock.associateToken).toHaveBeenCalled()
+            expect(EmailerServiceMock.prototype.sendMail).toHaveBeenCalled()
+            expect(result).toBeUndefined()
+        })
+    })
+
+    describe(`${UsuarioService.prototype.compareToken.name}()`, () => {
+        it(`deve estar definido`, () => {
+            const { sut } = sutFactory()
+            expect(sut.compareToken).toBeDefined()
+        })
+
+        it(`deve lançar uma exceção UnauthorizedException caso o token seja inválido`, async () => {
+            const { sut, usuarioRepositoryMock } = sutFactory()
+
+            const usuario = mockUsuarioModel.usuarioModel1()
+
+            jest.spyOn(usuarioRepositoryMock, 'findOneByCpf').mockResolvedValueOnce(usuario as any)
+
+            try {
+                await sut.compareToken('token', usuario as any)
+                fail('A exceção UnauthorizedException não foi lançada')
+            } catch (error) {
+                expect(error.message).toBe('Token inválido')
+                expect(usuarioRepositoryMock.findOneByCpf).toHaveBeenCalled()
+            }
+        })
+
+        it(`deve retornar true caso o token seja válido`, async () => {
+            const { sut, usuarioRepositoryMock } = sutFactory()
+
+            const usuario = mockUsuarioModel.usuarioModel1()
+            usuario.token_email = 'token'
+
+            jest.spyOn(usuarioRepositoryMock, 'findOneByCpf').mockResolvedValueOnce(usuario as any)
+
+            const result = await sut.compareToken('token', usuario as any)
+
+            expect(result).toBe(true)
+            expect(usuarioRepositoryMock.findOneByCpf).toHaveBeenCalled()
+        })
+    })
 })

@@ -1,14 +1,12 @@
-import { DataSource, QueryRunner } from 'typeorm'
-import { setEnv } from '../../config'
-import { EMailerService } from '../mailer/mailer.service'
-import { UsuarioRepository } from './usuario.repository'
-import { UsuarioService } from './usuario.service'
-import { UsuarioExistenteError } from './errors/usuario-existente.error'
-import { mockUsuario } from './__mocks__/usuario.mock'
-import { mockUsuarioModel } from './models/__mocks__/usuario.model.mock'
-import { mockBiometriaModel } from './models/__mocks__/biometria.model.mock'
-import { UsuarioModel } from './models/usuario.model'
 import { BadRequestException, NotFoundException } from '@nestjs/common'
+import { DataSource } from 'typeorm'
+import { setEnv } from '../../config'
+import { mockUsuario } from './__mocks__/usuario.mock'
+import { UsuarioExistenteError } from './errors/usuario-existente.error'
+import { mockBiometriaModel } from './models/__mocks__/biometria.model.mock'
+import { mockUsuarioModel } from './models/__mocks__/usuario.model.mock'
+import { UsuarioModel } from './models/usuario.model'
+import { UsuarioRepository } from './usuario.repository'
 
 setEnv()
 
@@ -411,6 +409,44 @@ describe(`${UsuarioRepository.name} suite`, () => {
 
             expect(UsuarioRepository.prototype.findOneByCpfWithBiometria).toHaveBeenCalled()
             expect(usuarioModel.biometria.foto).toBe('foto')
+            expect(usuarioModel.save).toHaveBeenCalled()
+        })
+    })
+
+    describe(`${UsuarioRepository.prototype.associateToken.name}()`, () => {
+        it(`deve estar definido`, () => {
+            const { sut } = sutFactory()
+            expect(sut.associateToken).toBeDefined()
+        })
+
+        it(`deve retornar sem fazer nada caso o usuário não seja encontrado`, async () => {
+            const { sut } = sutFactory()
+
+            jest.spyOn(UsuarioRepository.prototype, 'findOneByEmail').mockResolvedValueOnce(null)
+
+            const result = await sut.associateToken('email', 'token')
+
+            expect(UsuarioRepository.prototype.findOneByEmail).toHaveBeenCalled()
+            expect(result).toBeUndefined()
+        })
+
+        it(`deve associar o token ao usuário`, async () => {
+            const { sut } = sutFactory()
+
+            const usuarioModel = {
+                ...mockUsuarioModel.usuarioModel1(),
+                save: jest.fn(),
+                findOne: jest.fn(),
+            }
+
+            jest.spyOn(UsuarioRepository.prototype, 'findOneByEmail').mockResolvedValueOnce(
+                usuarioModel as unknown as UsuarioModel,
+            )
+
+            await sut.associateToken('email', '123456789')
+
+            expect(UsuarioRepository.prototype.findOneByEmail).toHaveBeenCalled()
+            expect(usuarioModel.token_email).toBe('123456789')
             expect(usuarioModel.save).toHaveBeenCalled()
         })
     })

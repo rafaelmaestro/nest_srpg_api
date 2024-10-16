@@ -1,15 +1,9 @@
 import { ulid } from 'ulid'
 import { setEnv } from '../../config'
-import { EMailerService } from '../mailer/mailer.service'
 import { mockUsuario } from './__mocks__/usuario.mock'
-import { UsuarioRepository } from './usuario.repository'
-import { UsuarioService } from './usuario.service'
-import { UsuarioExistenteError } from './errors/usuario-existente.error'
-import { NotFoundException } from '@nestjs/common'
-import { mockUsuarioModel } from './models/__mocks__/usuario.model.mock'
-import { UsuarioModel } from './models/usuario.model'
-import { UsuarioController } from './usuario.controller'
 import { Usuario } from './entities/usuario.entity'
+import { UsuarioController } from './usuario.controller'
+import { UsuarioService } from './usuario.service'
 
 setEnv()
 
@@ -181,6 +175,30 @@ describe(`${UsuarioController.name} suite`, () => {
 
             expect(usuarioServiceMock.findUserWithCreatedAt).toHaveBeenCalledWith(mockUsuario.criarUsuario1().cpf)
             expect(usuarioServiceMock.findUserWithCreatedAt).toHaveBeenCalled()
+        })
+    })
+
+    describe(`${UsuarioController.prototype.compareToken.name} suite`, () => {
+        it(`deve estar definido`, () => {
+            const { sut } = sutFactory()
+            expect(sut.compareToken).toBeDefined()
+        })
+
+        it(`deve executar o método compareToken e retornar true`, async () => {
+            const { sut, usuarioServiceMock } = sutFactory()
+
+            jest.spyOn(usuarioServiceMock, 'compareToken').mockResolvedValue(true)
+
+            const compareToken = await sut.compareToken(
+                {
+                    token: 'token',
+                },
+                mockUsuario.criarUsuario1(),
+            )
+
+            expect(compareToken).toBe(true)
+            expect(usuarioServiceMock.compareToken).toHaveBeenCalledWith('token', mockUsuario.criarUsuario1())
+            expect(usuarioServiceMock.compareToken).toHaveBeenCalled()
         })
     })
 })
