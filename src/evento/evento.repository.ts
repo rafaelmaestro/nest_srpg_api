@@ -1,14 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { DataSource, ILike } from 'typeorm'
 import { ulid } from 'ulid'
+import { UsuarioRepository } from '../usuario/usuario.repository'
 import { CreateEventoDto } from './dto/create-evento.dto'
+import { UpdateEventoDto } from './dto/update-evento.dto'
+import { Convidado } from './entities/convidado.entity'
+import { StatusEvento } from './entities/evento.entity'
+import { CheckInsModel } from './models/check-ins.model'
 import { ConvidadoEventoModel } from './models/convidado-evento.model'
 import { EventoModel } from './models/evento.model'
-import { UpdateEventoDto } from './dto/update-evento.dto'
-import { StatusEvento } from './entities/evento.entity'
-import { Convidado } from './entities/convidado.entity'
-import { UsuarioRepository } from '../usuario/usuario.repository'
-import { CheckInsModel } from './models/check-ins.model'
 
 @Injectable()
 export class EventoRepository {
@@ -505,7 +505,7 @@ export class EventoRepository {
         return {
             nome: eventos[0].nome ? eventos[0].nome : null,
             convidados: {
-                total: eventos[0].convidados.length || 0,
+                total: eventos[0].convidados ? eventos[0].convidados.length : 0,
                 emails: eventos[0].convidados ? eventos[0].convidados.map((convidado) => convidado.email) : [],
             },
         }
