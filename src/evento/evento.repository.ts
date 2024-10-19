@@ -201,7 +201,7 @@ export class EventoRepository {
                     await queryRunner.commitTransaction()
                 } catch (err) {
                     await queryRunner.rollbackTransaction()
-                    throw new Error(err)
+                    throw err
                 } finally {
                     await queryRunner.release()
                 }
@@ -250,12 +250,8 @@ export class EventoRepository {
         if (cpf_convidado) {
             const usuario = await this.usuarioRepository.findOneByCpf(cpf_convidado)
 
-            if (!usuario) {
-                throw new NotFoundException('Usuário informado como convidado não encontrado')
-            }
-
             query.leftJoin('evento.convidados', 'convidado')
-            query.orWhere('convidado.email = :email', { email: usuario.email })
+            query.orWhere('convidado.email = :email', { email: usuario ? usuario.email : '' })
         }
 
         if (cpf_organizador) {
@@ -385,8 +381,8 @@ export class EventoRepository {
         if (porcentagem_presenca) {
             const evento = await this.findById(id_evento)
 
-            if (!evento) {
-                throw new NotFoundException('Evento não encontrado')
+            if (!evento || evento.evento.status != StatusEvento.FINALIZADO) {
+                throw new NotFoundException('Evento não encontrado, ou não está finalizado')
             }
 
             const duracaoEvento = evento.evento.dt_fim.getTime() - evento.evento.dt_inicio.getTime()
@@ -441,14 +437,6 @@ export class EventoRepository {
         }
 
         if (Array.isArray(convidadoModel.check_ins) && convidadoModel.check_ins.length === 0) {
-            throw new BadRequestException('Check-in não realizado para esse convidado')
-        }
-
-        const checkInNaoRealizado = convidadoModel.check_ins.find((check_in) => {
-            return check_in.dt_hora_check_in == null && check_in.dt_hora_check_out == null
-        })
-
-        if (checkInNaoRealizado) {
             throw new BadRequestException('Check-in não realizado para esse convidado')
         }
 
