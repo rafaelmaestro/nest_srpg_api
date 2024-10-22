@@ -84,8 +84,7 @@ export class CriacaoTabelasIniciais1724800267991 implements MigrationInterface {
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`DROP TABLE IF EXISTS public.convidado_evento`)
         await queryRunner.query(`DROP TABLE IF EXISTS public.evento`)
-        await queryRunner.query(`DROP TABLE IF EXISTS public.localizacao_usuario`)
-        await queryRunner.query(`DROP TABLE IF EXISTS public.biometria_base`)
+        await queryRunner.query(`DROP TABLE IF EXISTS public.biometria_usuario`)
         await queryRunner.query(`DROP TABLE IF EXISTS public.usuario`)
     }
 }
