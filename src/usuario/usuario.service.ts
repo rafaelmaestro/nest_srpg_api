@@ -5,6 +5,7 @@ import { foto } from './../../biometria-teste.d.ts.json'
 import { CreateUsuarioDto } from './dto/create-usuario.dto'
 import { UpdateUsuarioDto } from './dto/update-usuario.dto'
 import { Usuario } from './entities/usuario.entity'
+import { UsuarioModel } from './models/usuario.model'
 import { UsuarioRepository } from './usuario.repository'
 
 @Injectable()
@@ -32,8 +33,18 @@ export class UsuarioService {
         return usuarioCriado
     }
 
-    async recuperarSenha(email: string) {
-        const usuario = await this.usuarioRepository.findOneByEmail(email)
+    async recuperarSenha(emailOuCpf: string) {
+        if (!emailOuCpf) {
+            throw new BadRequestException('O e-mail ou CPF são obrigatórios para recuperação de senha')
+        }
+
+        let usuario: UsuarioModel
+
+        if (emailOuCpf.includes('@')) {
+            usuario = await this.usuarioRepository.findOneByEmail(emailOuCpf)
+        } else {
+            usuario = await this.usuarioRepository.findOneByCpf(emailOuCpf)
+        }
 
         if (!usuario) {
             throw new NotFoundException('Usuário não encontrado')
@@ -42,10 +53,10 @@ export class UsuarioService {
         const novaSenha = Math.random().toString(36).slice(-8)
         usuario.hash_recuperacao_senha = await bcrypt.hash(novaSenha, 10)
 
-        await this.usuarioRepository.setHashRecuperacaoSenha(email, usuario.hash_recuperacao_senha)
+        await this.usuarioRepository.setHashRecuperacaoSenha(usuario, usuario.hash_recuperacao_senha)
 
         this.emailerService.sendMail(
-            email,
+            usuario.email,
             'Recuperação de senha',
             `Sua nova senha é: ${novaSenha}`,
             `Sua nova senha é: <b>${novaSenha}</b>`,

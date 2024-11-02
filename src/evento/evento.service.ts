@@ -136,7 +136,7 @@ export class EventoService {
                         continue
                     }
 
-                    const checkOutPendente = registrosCheckIn.registros.find((r) => r.dt_hora_check_out == null)
+                    const checkOutPendente = registrosCheckIn.registros.find((r) => r?.dt_hora_check_out == null)
 
                     if (checkOutPendente) {
                         await this.checkOut(id, { email_convidado: emailCheckIn, data: new Date() })
@@ -144,9 +144,9 @@ export class EventoService {
 
                     let tempoPermanencia = 0
 
-                    if (checkOutPendente.dt_hora_check_in != null) {
+                    if (checkOutPendente?.dt_hora_check_in != null) {
                         tempoPermanencia = Math.abs(
-                            new Date(checkOutPendente.dt_hora_check_in).getTime() - new Date().getTime(),
+                            new Date(checkOutPendente?.dt_hora_check_in).getTime() - new Date().getTime(),
                         )
                     }
 

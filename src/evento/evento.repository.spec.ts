@@ -199,8 +199,6 @@ describe(`${UsuarioRepository.name} suite`, () => {
 
             const result = await sut.findById('id')
 
-            console.log(result)
-
             expect(result).toStrictEqual({
                 evento: {
                     nome: 'Evento 1',
@@ -249,8 +247,6 @@ describe(`${UsuarioRepository.name} suite`, () => {
             queryRunnerMock.manager.findOne.mockResolvedValue(mockEventoModel.criarEvento1())
 
             const result = await sut.findById('id')
-
-            console.log(result)
 
             expect(result).toStrictEqual({
                 evento: {

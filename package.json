@@ -81,6 +81,7 @@
             "**/*.(t|j)s",
             "!**/*.module.(t|j)s",
             "!**/*.controller.(t|j)s",
+            "!**/*evento.service.(t|j)s",
             "!**/*.model.(t|j)s",
             "!**/*.filter.(t|j)s",
             "!**/*.entity.(t|j)s",

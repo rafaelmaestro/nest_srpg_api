@@ -2,7 +2,6 @@ import { Body, Controller, Get, HttpCode, Param, Patch, Post, UseFilters } from 
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
 import { IsPublic } from '../auth/decorators/is-public.decorator'
 import { CreateUsuarioDto } from './dto/create-usuario.dto'
-import { RecuperarSenhaDto } from './dto/recuperar-senha.dto'
 import { UpdateUsuarioDto } from './dto/update-usuario.dto'
 import { Usuario } from './entities/usuario.entity'
 import { UsuarioExistenteFilter } from './filters/usuario-existente.filter'
@@ -29,9 +28,10 @@ export class UsuarioController {
     }
 
     @IsPublic()
+    @HttpCode(200)
     @Post('/recuperar-senha')
-    async recuperarSenha(@Body() recuperarSenhaDto: RecuperarSenhaDto) {
-        return await this.usuarioService.recuperarSenha(recuperarSenhaDto.email)
+    async recuperarSenha(@Body() recuperarSenhaDto: { emailOuCpf: string }) {
+        return await this.usuarioService.recuperarSenha(recuperarSenhaDto.emailOuCpf)
     }
 
     @Patch()

@@ -72,16 +72,8 @@ export class UsuarioRepository {
         return usuario
     }
 
-    async setHashRecuperacaoSenha(email: string, senha: string) {
-        const usuario = await this.findOneByEmail(email)
-
-        if (!usuario) {
-            return
-        }
-
-        usuario.hash_recuperacao_senha = senha
-
-        await usuario.save()
+    async setHashRecuperacaoSenha(usuarioModel: UsuarioModel, senha: string) {
+        return await usuarioModel.save()
     }
 
     async updateUsuario(updateUsuarioDto: UpdateUsuarioDto) {
