@@ -295,6 +295,10 @@ export class EventoRepository {
 
                 return {
                     ...evento,
+                    dt_fim: evento.dt_fim ? this._subtractHours(evento.dt_fim, 3) : null,
+                    dt_inicio: evento.dt_inicio ? this._subtractHours(evento.dt_inicio, 3) : null,
+                    dt_inicio_prevista: this._subtractHours(evento.dt_inicio_prevista, 3),
+                    dt_fim_prevista: this._subtractHours(evento.dt_fim_prevista, 3),
                     distancia_maxima_permitida: evento.distancia_maxima_permitida,
                     minutos_tolerancia: evento.minutos_tolerancia,
                     convidados: {
@@ -349,8 +353,10 @@ export class EventoRepository {
             registros: convidadoModel.check_ins.map((checkIn) => {
                 return {
                     id: checkIn.id,
-                    dt_hora_check_in: checkIn.dt_hora_check_in,
-                    dt_hora_check_out: checkIn.dt_hora_check_out || null,
+                    dt_hora_check_in: this._subtractHours(checkIn.dt_hora_check_in, 3),
+                    dt_hora_check_out: checkIn.dt_hora_check_out
+                        ? this._subtractHours(checkIn.dt_hora_check_out, 3)
+                        : null,
                 }
             }),
         }
@@ -416,8 +422,10 @@ export class EventoRepository {
             registros: convidadoModel.check_ins.map((checkIn) => {
                 return {
                     id: checkIn.id,
-                    dt_hora_check_in: checkIn.dt_hora_check_in,
-                    dt_hora_check_out: checkIn.dt_hora_check_out || null,
+                    dt_hora_check_in: this._subtractHours(checkIn.dt_hora_check_in, 3),
+                    dt_hora_check_out: checkIn.dt_hora_check_out
+                        ? this._subtractHours(checkIn.dt_hora_check_out, 3)
+                        : null,
                 }
             }),
         }
@@ -469,8 +477,10 @@ export class EventoRepository {
             registros: convidadoModel.check_ins.map((checkIn) => {
                 return {
                     id: checkIn.id,
-                    dt_hora_check_in: checkIn.dt_hora_check_in,
-                    dt_hora_check_out: checkIn.dt_hora_check_out || null,
+                    dt_hora_check_in: this._subtractHours(checkIn.dt_hora_check_in, 3),
+                    dt_hora_check_out: checkIn.dt_hora_check_out
+                        ? this._subtractHours(checkIn.dt_hora_check_out, 3)
+                        : null,
                 }
             }),
         }
@@ -497,5 +507,11 @@ export class EventoRepository {
                 emails: eventos[0].convidados ? eventos[0].convidados.map((convidado) => convidado.email) : [],
             },
         }
+    }
+
+    _subtractHours(date: Date, hours: number): Date {
+        const newDate = new Date(date)
+        newDate.setHours(newDate.getHours() - hours)
+        return newDate
     }
 }
